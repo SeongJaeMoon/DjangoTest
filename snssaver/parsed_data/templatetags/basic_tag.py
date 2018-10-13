@@ -80,8 +80,7 @@ def get_users(data): # 사용자 정보
 
 @register.filter 
 def get_places(data): # 사용자가 자주 태그한 장소 Top10
-    values = [str(d).replace('),','') for d in re.findall('\d*\),', statistic.place)]
-    keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", statistic.place)]
-    print(len(statistic.place), statistic.place)
+    values = [str(d).replace('),','') for d in re.findall('\d*\),', data)]
+    keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", data)]
     print(len(keys), keys[:10])
     print(len(values), values[:10])

@@ -24,6 +24,56 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript">
     $(document).ready(function(){
+        $("button#btn_change").on('click', function(){
+            $('.spinner').css('display', '');
+            var temp = $(this).val(); // 기준 -> 기본은 1(시간), 변경시 2(날짜)
+            var dtlabel = "";
+            if(temp == 1){
+                // 날짜 기준으로 보기로 변경
+                $(this).text("시간 기준으로 보기");
+                $(this).val('2'); // 값 변경
+                dtlabel = "날짜에 따른 게시글";
+            }else if(temp == 2){
+                // 시간 기준으로 보기로 변경
+                $(this).text("날짜 기준으로 보기");
+                $(this).val('1'); // 값 변경
+                dtlabel = "시간에 따른 게시글";
+            }
+            // console.log(temp);
+            $.ajax({
+                    type: "POST", // 데이터를 전송하는 방법을 지정
+                    url: "/change_line/", // 통신할 url을 지정
+                    data: {'val': temp, 
+                           'ids': "{{ parsing.ids }}",
+                           'csrfmiddlewaretoken': '{{ csrf_token }}'},    
+                    success: function(data){
+                        // console.log(typeof(data), data);
+                        changeChart(dtlabel, data);
+                        $('.spinner').css('display', 'none');
+                    },
+                    dataType: 'json',
+                    error: function(request, status, error){
+                        alert(status +": "+ error);
+                        $('.spinner').css('display', 'none');
+                    }
+            });
+        });
+        function changeChart(dtlabel, data){
+            var keys = data['key'];
+            var vals = data['value'];
+            var line = document.getElementById('lineChart').getContext('2d');
+            var lineChart = new Chart(line, {
+                type: 'line',
+                data: {
+                    labels: keys,
+                    datasets: [{
+                    label: dtlabel,
+                    data: vals,
+                    backgroundColor: "rgba(153,255,51,0.6)"
+                }]
+            }
+            });
+        };
     });
     </script>
     <script type="text/javascript">
@@ -51,7 +101,7 @@
             </div>    
         </form>
         <div class="navbar-header">
-            <a class="navbar-brand" href="https://www.instargram/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+            <a class="navbar-brand" href="https://www.instagram/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
         </div>
         <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
@@ -81,7 +131,7 @@
             <aside class="sidebar">
                 <ul class="nav" style="display:inline-block; margin: 5px;">
                     <li class="active" style="margin: 5px;"><a href="#"></i>Dashboard</a></li>
-                    <li style="margin: 5px;"><a href="/analysis/">Analysis</a></li>
+                    <li style="margin: 5px;"><a href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
                     <li style="margin: 5px;"><a href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
                     <li style="margin: 5px;"><a href="{% url 'video' ids=parsing.ids %}">Video</a></li> 
                 </ul>
@@ -90,6 +140,13 @@
             <section class="content">
                 <ol class="breadcrumb">
                     <li class="active"><strong style="color: blue;">총 게시물: </strong>{{parsing.total}}, <strong style="color: blue;">생성일: </strong>{{parsing.created_at}}</li>
+                    <div class="spinner" style="display: none;">
+                            <div class="rect1"></div>
+                            <div class="rect2"></div>
+                            <div class="rect3"></div>
+                            <div class="rect4"></div>
+                            <div class="rect5"></div>
+                    </div>
                 </ol>
                 <div class="header">
                     <div class="col-md-12">

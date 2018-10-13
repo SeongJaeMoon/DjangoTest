@@ -13,6 +13,7 @@ from os.path import curdir, pardir
 from os import chdir, mkdir
 from multiprocessing import Pool
 import re
+import analysis
 
 # Python이 실행될 때 DJANGO_SETTINGS_MODULE이라는 환경 변수에 현재 프로젝트의 settings.py 파일 경로를 등록
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "snssaver.settings")
@@ -33,24 +34,19 @@ HEADER = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
 }
 # 인스타그램 메인 -> id의 변화에 따른 update 결과 추가 하기! 추가, 삭제
-def instagram(loop: "user id", isUpdate = True):
+def instagram(keyword: "user id", isUpdate = True):
     try:
-        keyword = str(loop).strip()
-        
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         options.add_argument('window-size=1920x1080')
         options.add_argument("disable-gpu") 
-        
         driver = webdriver.Chrome(DRIVER_DIR, chrome_options=options) # 브라우저 띄우기 
         driver.implicitly_wait(10)
         driver.get(URL + keyword) # URL 주소 가져오기
         sleep(5)
-
-        result = [] # 결과 저장 리스트
-
-        result.append(keyword) # 사용자 아이디, index 0
         
+        result = [] # 결과 저장 리스트
+        result.append(keyword) # 사용자 아이디, index 0
         total = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/header/section/ul/li[1]/a/span') # 총 게시물 수
         total_len = int(str(total.text).replace(',', '')) # 게시물 수
         result.append(total_len) # 게시물 총 수, index 1
@@ -64,23 +60,16 @@ def instagram(loop: "user id", isUpdate = True):
             save_total = int(user_data.total)
             print('save_total', save_total)
             if not (total_len > save_total): # Update이면서, 새로운 게시물이 없다면 
-                return # 바로 return
+                return keyword, False # 바로 return (사용자 아이디, 변경 사항 없음)
+            else:
+                user_data.profile_img = str(pro_img.get_attribute('src'))
+                user_data.total = total_len
+                user_data.save()
 
-
-        user_data.profile_img = str(pro_img.get_attribute('src'))
-        user_data.total = total_len
-        user_data.save()
-
-        if isUpdate:
             upload = [u.link for u in UploadData.objects.filter(user = user_data)] 
-
-            driver.execute_script('window.scrollTo(0, document.body.scrollHeight)') # 자동 스크롤 내리기
             time.sleep(4)
-
             links = [i.get_attribute('href') for i in driver.find_elements_by_css_selector('div.v1Nh3 > a')] # 연결 주소 리스트
-
-            new_links = list(set(links) - set(upload))
-            print(new_links)
+            new_links = list(set(links) - set(upload)) # 기존의 주소에 없는 새로 찾은 주소만 반환
         else:         
             new_links = []
             break_point = 0
@@ -98,9 +87,9 @@ def instagram(loop: "user id", isUpdate = True):
                     else: 
                         break_point += 1
 
-        print(keyword + '-new_links: ', len(new_links)) # 새로운 링크 주소
+        print(keyword + '-new_links: ', len(new_links)) # 새로운 링크 주소 수
 
-        data_list = []       
+        data_list = []      
         for idx, link in enumerate(new_links):
             print(keyword + ': ', idx)
             driver.get(link)
@@ -156,6 +145,7 @@ def instagram(loop: "user id", isUpdate = True):
             data_list.append(datas)
         result.append(data_list) # index 4 ~
         save_db(result, isUpdate)
+        return keyword, True # (사용자 아이디, 변경 사항 있음) -> 데이터 분석 DB 업데이트!
     except Exception as e:
         print(e)
     finally:
@@ -198,7 +188,6 @@ def save_db(data: "user data-list", isUpdate = False):
         print(e)
     finally:
         print('save done')
-
 # 이미지 저장 -> 보류
 def save_img(path_title, link):
     try:
@@ -261,13 +250,20 @@ if __name__ == "__main__":
     # 주기적으로 데이터 크롤링 필요(cron|nano)
     start_time = time.time()
     try:
-        auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
+        isNewId, isNewValue = instagram('ohttomom', isUpdate=False)
+        if isNewValue:
+            save_rank(analysis.get_rank(user_id = isNewId), isUpdate = False)
+        # auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
+        # 주기적으로 Video 업데이트(48시간)
         # for i in auto_id:
         #     update_video(i) # video DB Update        
-        datas = []
-        isUpdate = [True for i in range(len(datas))]
-        with Pool(processes = 4) as p:
-            p.starmap(instagram, zip(datas, isUpdate))
+        
+        # 주기적으로 Data Update
+        # isNewData = []
+        # isUpdate = [True for i in range(len(auto_id))]
+        # with Pool(processes = 4) as p:
+            # isNewId, isNewValue = p.starmap(instagram, zip(auto_id, isUpdate))
+            # isNewData.append([isNewId, isNewValue])
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

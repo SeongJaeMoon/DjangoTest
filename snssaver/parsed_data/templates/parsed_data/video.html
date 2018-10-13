@@ -95,7 +95,7 @@
             <aside class="sidebar">
                 <ul class="nav" style="display:inline-block; margin: 5px;">
                     <li style="margin: 5px;"><a href="http://localhost:8000/"></i>Dashboard</a></li>
-                    <li style="margin: 5px;"><a href="/analysis/">Analysis</a></li>
+                    <li style="margin: 5px;"><a href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
                     <li style="margin: 5px;"><a href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
                     <li class="active" style="margin: 5px;"><a href="#">Video</a></li> 
                 </ul>

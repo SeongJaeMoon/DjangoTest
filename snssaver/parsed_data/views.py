@@ -3,12 +3,13 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from .models import ParsingData, UploadData, ImgData, VideoData, Comment, BasicStatistic
-from django.views.decorators.http import require_GET, require_POST
-from django.http import JsonResponse
 from django.template import loader
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from analysis import times_hours_key, times_hours_val, times_value, times_date 
+# Class View 변경 필요
 
 # Main
 def index(request):
@@ -16,8 +17,8 @@ def index(request):
     parsing = ParsingData.objects.get(ids = 'tw.momoring') # 사용자 정보
     basicstat = BasicStatistic.objects.get(ids = 'tw.momoring')    
     return render(request, 'parsed_data/index.html', {'parsing': parsing, 
-                                                      'basicstat': basicstat, 
-                                                      'users':auto_id})
+                                                      'basicstat': basicstat,
+                                                      'users':auto_id})                                 
 # User Search
 def search_user(request):
     ids = request.POST.get('ids', None)
@@ -28,9 +29,30 @@ def search_user(request):
     c = {'parsing': parsing, 'basicstat': basicstat, 'users':auto_id}
     return HttpResponse(t.render(c, request))
 
+# ajax -> data reloading (게시물 월, 시간)
+@require_POST # 해당 뷰는 POST method 만 받는다.
+def change_line(request):
+    # ajax 통신을 통해서 template에서 POST 
+    ids = request.POST.get('ids', None)
+    val = request.POST.get('val', None)
+    hour_day = get_object_or_404(BasicStatistic, ids=ids)
+    if val == '2':
+        # 시간 기준으로 변경
+        context = hour_day.time_hours
+        key = times_hours_key(context)
+        value = times_hours_val(context)
+    else:
+        # 날짜 기준으로 변경
+        context = hour_day.time_days
+        key = times_date(context)
+        value = times_value(context)
+    data = {'key': key, 'value': value}
+    return JsonResponse(data)
+
 # More Analysistic
-def analysis(request):
-    return render(request, 'parsed_data/analysis.html', {})
+def analysis(request, ids):
+    parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
+    return render(request, 'parsed_data/analysis.html', {'parsing':parsing})
 
 # Gallery
 def gallery(request, ids):

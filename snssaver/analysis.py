@@ -159,24 +159,49 @@ def save_rank(data, isUpdate = False):
                                           reply_user=data['reply_user'])
         else:
             # 업데이트 -> 사용자 게시물 수 비교 후 추가 데이터 가져와서 update   
-            pass
+            statistic = BasicStatistic.objects.get(ids=data['ids'])
+            statistic.hashtag = data['hash']
+            statistic.wording = data['wording']
+            statistic.users = data['users']
+            statistic.place = data['place']
+            statistic.time_days = data['time_days']
+            statistic.time_hours = data['time_hours']
+            statistic.likes = data['likes']
+            statistic.moving_avg = data['mv']
+            statistic.replies = data['replies']
+            statistic.reply_user = data['reply_user']
+            statistic.save()
     except Exception as e:
         print(e)
     finally:
         print('analysis done')
 
+def times_date(data): # 날짜 반환 -> 10개
+    result = []
+    dates = re.findall('(\d*\-\d*\-\d*)', data)
+    return dates[:10]
+
+def times_value(data): # 날짜에 따른 게시물 수 반환 -> 10개
+    digits = [str(d).replace(')','') for d in re.findall('\d*\)', data)]
+    digits = [int(d) for d in digits]
+    return digits[:10]
+
+def times_hours_key(data): # 시간 반환
+    key_value = re.findall('\d+', data)
+    key = [key_value[k] for k in range(0, len(key_value), 2)]
+    return key
+
+def times_hours_val(data): # 시간에 따른 게시물 수 반환
+    key_value = re.findall('\d+', data)
+    val = [int(key_value[k]) for k in range(1, len(key_value), 2)]
+    return val
+
 if __name__ == "__main__":
     start_time = time.time()
-    # 주기적으로 재분석 필요(DB 업데이트)
-    # auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()]
-    # ids = str(auto_id).replace('[','').replace(']','').replace("'",'').strip()
-    # ids = ids.split(',')
-    # for i in ids[1:]:
-    #     if i == 'tw.momoring':
-    #         continue
-    #     print(i.strip())
-        # result = get_rank(user_id = i.strip())
-    #     save_rank(result, isUpdate = False)
+    # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
+    for i in ['tw.momoring', 'superstar_jhs']:
+        result = get_rank(user_id = i)
+        save_rank(result, isUpdate = True)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 

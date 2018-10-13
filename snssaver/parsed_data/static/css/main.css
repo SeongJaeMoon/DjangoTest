@@ -540,25 +540,7 @@ a:focus {
 .panel-group .panel-footer + .panel-collapse .panel-body {
   border-bottom: none;
 }
-/*
- * Wells
- */
-.well {
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
-  background-color: #fafafa;
-}
-.well h1,
-.well h2,
-.well h3,
-.well h4,
-.well h5,
-.well h6 {
-  margin-top: 0px;
-}
+
 /*
  * Dialogs
  */
@@ -1515,83 +1497,16 @@ body.fixed_header.fixed_menu .wrapper {
   color: #888888;
   display: block;
 }
-/*
- * Error pages
- */
-.panel.error-panel {
-  border: none;
-  margin: 30px auto 0 auto;
-  width: auto;
-  text-align: center;
-}
-.panel.error-panel .panel-title {
-  font-size: 30px;
-}
-.panel.error-panel .panel-title i {
-  font-size: 60px;
-  display: block;
-  margin-bottom: 15p;
-}
-.panel.error-panel .panel-body p {
-  margin-bottom: 20px;
-}
-@media (min-width: 768px) {
-  .panel.error-panel {
-    width: 500px;
-  }
-}
+
 /**
  * Search Area
  */
-.search {
-  position: relative;
+#ui-id-1 li.ui-menu-item > div{
+  background: powderblue;
+  color: green;
+  z-index: 1000;
 }
-.search .btn-search {
-  position: absolute;
-  border-radius: 4px 4px 0 0;
-  top: -30px;
-  right: 15px;
-  background-color: #428bca;
-  color: #FFF;
-  padding: 6px 8px;
-}
-.search .btn-search:hover {
-  background-color: #4a90cc;
-}
-.search .search-form {
-  display: none;
-  padding: 10px 17px 17px;
-  background-color: #428bca;
-}
-.search .search-form:after {
-  clear: both;
-}
-.search .search-form h1,
-.search .search-form h2,
-.search .search-form h3,
-.search .search-form h4,
-.search .search-form h5,
-.search .search-form h6 {
-  margin-top: 0;
-  color: #FFF;
-}
-.search .search-form form {
-  padding: 5px;
-  background-color: #FFF;
-}
-.search .search-form form .form-group {
-  margin-bottom: 5px;
-}
-.search .search-form form .checkbox {
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-.search.active .btn-search:hover i:before {
-  content: "\f00d";
-}
-.search.active .search-form {
-  display: block;
-}
+
 /*
  * Gallery Section
  */
@@ -1683,93 +1598,55 @@ body.fixed_header.fixed_menu .wrapper {
   height: 300px;
  }
 
-/* Pretty printing styles. Used with prettify.js. */
-/* SPAN elements with the classes below are added by prettyprint. */
-.pln {
-    color: #5c5c5c;
+ .spinner {
+  margin: 100px auto;
+  width: 50px;
+  height: 40px;
+  text-align: center;
+  font-size: 10px;
+}
+
+.spinner > div {
+  background-color: #333;
+  height: 100%;
+  width: 6px;
+  display: inline-block;
+  
+  -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+  animation: sk-stretchdelay 1.2s infinite ease-in-out;
+}
+
+.spinner .rect2 {
+  -webkit-animation-delay: -1.1s;
+  animation-delay: -1.1s;
+}
+
+.spinner .rect3 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+.spinner .rect4 {
+  -webkit-animation-delay: -0.9s;
+  animation-delay: -0.9s;
+}
+
+.spinner .rect5 {
+  -webkit-animation-delay: -0.8s;
+  animation-delay: -0.8s;
+}
+
+@-webkit-keyframes sk-stretchdelay {
+  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+  20% { -webkit-transform: scaleY(1.0) }
+}
+
+@keyframes sk-stretchdelay {
+  0%, 40%, 100% { 
+    transform: scaleY(0.4);
+    -webkit-transform: scaleY(0.4);
+  }  20% { 
+    transform: scaleY(1.0);
+    -webkit-transform: scaleY(1.0);
   }
-  /* plain text */
-  @media screen {
-    .str {
-      color: #f38d05;
-    }
-    /* string content */
-    .kwd {
-      color: #3a67bd;
-    }
-    /* a keyword */
-    .com {
-      color: #949494;
-    }
-    /* a comment */
-    .typ {
-      color: #789306;
-    }
-    /* a type name */
-    .lit {
-      color: #066;
-    }
-    /* a literal value */
-    /* punctuation, lisp open bracket, lisp close bracket */
-    .pun,
-    .opn,
-    .clo {
-      color: #660;
-    }
-    .tag {
-      color: #3a67bd;
-    }
-    /* a markup tag name */
-    .atn {
-      color: #789306;
-    }
-    /* a markup attribute name */
-    .atv {
-      color: #f38d05;
-    }
-    /* a markup attribute value */
-    .dec,
-    .var {
-      color: #606;
-    }
-    /* a declaration; a variable name */
-    .fun {
-      color: red;
-    }
-    /* a function name */
-  }
-  /* Put a border around prettyprinted code snippets. */
-  pre.prettyprint {
-    padding: 5px;
-    color: #5c5c5c;
-    border: 1px solid #ededed;
-    background-color: #FFF;
-    font-size: 11px;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border-radius: 0;
-  }
-  code {
-    font-size: 90%;
-    color: #5c5c5c;
-    white-space: nowrap;
-    background-color: #FFF;
-    border: 1px solid #ededed;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border-radius: 0;
-  }
-  /* Specify class=linenums on a pre to get line numbering */
-  ol.linenums {
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-  /* IE indents via margin-left */
-  /* Alternate shading for lines */
-  li.L1,
-  li.L3,
-  li.L5,
-  li.L7,
-  li.L9 {
-    background: #f8f8f8;
-  }
+}
