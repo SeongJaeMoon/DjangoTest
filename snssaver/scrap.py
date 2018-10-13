@@ -27,49 +27,76 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 URL = 'https://www.instagram.com/'
 DRIVER_DIR = '/Users/moonseongjae/chromedriver'
-FILE_DIR = '/Users/moonseongjae/Proejct_intercept/factory/{}/' # 경로 문자열 포맷팅하기
+FILE_DIR = '/Users/moonseongjae/Proejct_sns/factory/{}/' # 경로 문자열 포맷팅하기
 
 HEADER = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
 }
 # 인스타그램 메인 -> id의 변화에 따른 update 결과 추가 하기! 추가, 삭제
-def instagram(loop: "user id"):
+def instagram(loop: "user id", isUpdate = True):
     try:
-        keyword = str(loop)
+        keyword = str(loop).strip()
+        
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         options.add_argument('window-size=1920x1080')
-        options.add_argument("disable-gpu")
+        options.add_argument("disable-gpu") 
         
         driver = webdriver.Chrome(DRIVER_DIR, chrome_options=options) # 브라우저 띄우기 
         driver.implicitly_wait(10)
         driver.get(URL + keyword) # URL 주소 가져오기
         sleep(5)
+
         result = [] # 결과 저장 리스트
+
         result.append(keyword) # 사용자 아이디, index 0
+        
         total = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/header/section/ul/li[1]/a/span') # 총 게시물 수
         total_len = int(str(total.text).replace(',', '')) # 게시물 수
         result.append(total_len) # 게시물 총 수, index 1
-        print(keyword + ' 총 게시물:', total_len) 
+        print(keyword + ' 총 게시물:', total_len)
 
         pro_img = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/header/div/div/span/img')
         result.append(pro_img.get_attribute('src')) # 프로필 이미지, index: 2
-          
-        new_links = []
-        break_point = 0
-        while True:
+
+        if isUpdate:
+            user_data = ParsingData.objects.get(ids=keyword)
+            save_total = int(user_data.total)
+            print('save_total', save_total)
+            if not (total_len > save_total): # Update이면서, 새로운 게시물이 없다면 
+                return # 바로 return
+
+
+        user_data.profile_img = str(pro_img.get_attribute('src'))
+        user_data.total = total_len
+        user_data.save()
+
+        if isUpdate:
+            upload = [u.link for u in UploadData.objects.filter(user = user_data)] 
+
             driver.execute_script('window.scrollTo(0, document.body.scrollHeight)') # 자동 스크롤 내리기
             time.sleep(4)
+
             links = [i.get_attribute('href') for i in driver.find_elements_by_css_selector('div.v1Nh3 > a')] # 연결 주소 리스트
-            for i in links:
-                if not (i in new_links):
-                    new_links.append(i)
-            print(keyword + ': ', len(new_links)) # 현재 찾은 주소의 수
-            if (total_len - len(new_links)) < 12:
-                if len(new_links) == total_len or break_point >= 5:
-                    break
-                else: 
-                    break_point += 1
+
+            new_links = list(set(links) - set(upload))
+            print(new_links)
+        else:         
+            new_links = []
+            break_point = 0
+            while True:
+                driver.execute_script('window.scrollTo(0, document.body.scrollHeight)') # 자동 스크롤 내리기
+                time.sleep(4)
+                links = [i.get_attribute('href') for i in driver.find_elements_by_css_selector('div.v1Nh3 > a')] # 연결 주소 리스트
+                for i in links:
+                    if not (i in new_links):
+                        new_links.append(i)
+                print(keyword + ': ', len(new_links)) # 현재 찾은 주소의 수
+                if (total_len - len(new_links)) < 12:
+                    if len(new_links) == total_len or break_point >= 5:
+                        break
+                    else: 
+                        break_point += 1
 
         print(keyword + '-new_links: ', len(new_links)) # 새로운 링크 주소
 
@@ -80,8 +107,6 @@ def instagram(loop: "user id"):
             datas = {} # index3 ~
             datas['link'] = link # 게시물 페이지 주소
             sleep(1)        
-
-            # datetime.datetime.strptime(time, '%Y-%m-%d')
             try:
                 datas['time'] = ''
                 datas['time'] = driver.find_element_by_css_selector('time.Nzb55').get_attribute('datetime') # 시간
@@ -130,16 +155,20 @@ def instagram(loop: "user id"):
                 pass
             data_list.append(datas)
         result.append(data_list) # index 4 ~
-        save_db(result)
+        save_db(result, isUpdate)
     except Exception as e:
         print(e)
     finally:
         driver.quit()
-# DB 값 저장
-def save_db(data: "user data-list"):
+
+# DB 값 저장 (데이터가 추가되면 필요한 값 추출)
+def save_db(data: "user data-list", isUpdate = False):
     # ParsingData, UploadData, ImgData, VideoData, Comment
     try:
-        parsing = ParsingData.objects.create(ids = data[0], total = data[1], profile_img = data[2])
+        if isUpdate: # Update 쿼리면 바로 GET
+            parsing = ParsingData.objects.get(ids=data[0])
+        else: # Create 쿼리면 Create
+            parsing = ParsingData.objects.create(ids = data[0], total = data[1], profile_img = data[2])
         # [[k:v, k:v, k:v,...], [k:v, k:v, k:v,...], [k:v, k:v, k:v,...]]
         for d in data[3]:
             # [k:v, k:v, k:v,...]
@@ -169,6 +198,7 @@ def save_db(data: "user data-list"):
         print(e)
     finally:
         print('save done')
+
 # 이미지 저장 -> 보류
 def save_img(path_title, link):
     try:
@@ -191,17 +221,53 @@ def save_mp4(path_title, link):
     except Exception as e:
         print(e)
         pass
-# 데이터가 추가되면 필요한 값 추출
-def more_data():
-    pass
-
+# 비디오 주소 업데이트 -> 주기적으로 캐싱 업데이트 됨
+def update_video(keyword): 
+    print('update_video: ', keyword)
+    start = time.time()
+    try:
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        options.add_argument('window-size=1920x1080')
+        options.add_argument("disable-gpu") 
+        driver = webdriver.Chrome(DRIVER_DIR, chrome_options=options) # 브라우저 띄우기 
+        driver.implicitly_wait(10)
+        try:
+            uploads = UploadData.objects.filter(user = ParsingData.objects.get(ids = keyword)) # upload 주소 링크
+        except Exception as e:
+            print(keyword, e)
+            pass
+        else:
+            for up in uploads: # 모든 업로드 링크 주소
+                videos = VideoData.objects.filter(list_video=up)
+                for i in videos: # 비디오만 해당하는 주소 수 만큼 반복
+                    driver.get(str(i.list_video)) # Driver Get
+                    try:
+                        new_video = driver.find_elements_by_css_selector('div._5wCQW > video')
+                        for idx, j in enumerate([v.get_attribute('src') for v in new_video]): # 동영상 주소 -> 다수 반환(중복 발생)
+                            new = VideoData.objects.get(pk = videos[idx].pk)
+                            new.vidoes = str(j)                    
+                            new.save()
+                    except Exception as e:
+                        print(keyword + ' update error', e)
+                        pass
+    except Exception as e:
+        print(e)
+    finally:
+        print(keyword, time.time() - start)
+        driver.quit()
+        
 if __name__ == "__main__":
     # 주기적으로 데이터 크롤링 필요(cron|nano)
     start_time = time.time()
     try:
         auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
-        with Pool(processes = 2) as p:
-            p.map(instagram, datas)
+        # for i in auto_id:
+        #     update_video(i) # video DB Update        
+        datas = []
+        isUpdate = [True for i in range(len(datas))]
+        with Pool(processes = 4) as p:
+            p.starmap(instagram, zip(datas, isUpdate))
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

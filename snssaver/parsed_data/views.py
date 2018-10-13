@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.template import loader
 from django.core.paginator import Paginator
 
+# Main
 def index(request):
     auto_id = [u.ids for u in ParsingData.objects.all()]
     parsing = ParsingData.objects.get(ids = 'tw.momoring') # 사용자 정보
@@ -17,7 +18,7 @@ def index(request):
     return render(request, 'parsed_data/index.html', {'parsing': parsing, 
                                                       'basicstat': basicstat, 
                                                       'users':auto_id})
-
+# User Search
 def search_user(request):
     ids = request.POST.get('ids', None)
     auto_id = [u.ids for u in ParsingData.objects.all()]
@@ -27,15 +28,21 @@ def search_user(request):
     c = {'parsing': parsing, 'basicstat': basicstat, 'users':auto_id}
     return HttpResponse(t.render(c, request))
 
+# More Analysistic
 def analysis(request):
     return render(request, 'parsed_data/analysis.html', {})
 
+# Gallery
 def gallery(request, ids):
-    auto_id = [u.ids for u in ParsingData.objects.all()]
-    uid = ParsingData.objects.get(ids=ids) # id에 해당하는 유저 정보
-    img = [ImgData.objects.filter(list_img = up).values('imgs') for up in UploadData.objects.filter(user=uid) if up] # 유저 정보에 해당하는 포스팅 목록
+    auto_id = [u.ids for u in ParsingData.objects.all()] # 전체 유저 정보
+    uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
+    result = [] # 결과
+    for up in UploadData.objects.filter(user = uid).order_by('-created_at'): # 유저 정보에 해당하는 포스팅 목록
+        for i in ImgData.objects.filter(list_img = up).order_by('-created_at'): # 실제 이미지 연결 주소
+            result.append(i)
+
     page = request.GET.get('page', 1)
-    paginator = Paginator(img, 35)
+    paginator = Paginator(result, 35)
     try:
         images = paginator.page(page)
     except PageNotAnInteger:
@@ -45,12 +52,16 @@ def gallery(request, ids):
 
     return render(request, 'parsed_data/gallery.html', {'users':auto_id, 'parsing':uid, 'images':images})
 
+# Video
 def video(request, ids):
     auto_id = [u.ids for u in ParsingData.objects.all()]
-    uid = ParsingData.objects.get(ids=ids) # id에 해당하는 유저 정보
-    video = [VideoData.objects.filter(list_video = up).values('vidoes') for up in UploadData.objects.filter(user=uid) if up] # 유저 정보에 해당하는 포스팅 목록
+    uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
+    result = [] # 결과
+    for up in UploadData.objects.filter(user = uid): # 유저 정보에 해당하는 포스팅 목록
+        for i in VideoData.objects.filter(list_video = up): # 실제 비디오 연결 주소
+            result.append(i)
     page = request.GET.get('page', 1)
-    paginator = Paginator(video, 35)
+    paginator = Paginator(result, 35)
     try:
         videos = paginator.page(page)
     except PageNotAnInteger:

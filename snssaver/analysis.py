@@ -167,15 +167,15 @@ def save_rank(data, isUpdate = False):
 
 if __name__ == "__main__":
     start_time = time.time()
-    # auto_id = [u.ids for u in ParsingData.objects.all()]
     # 주기적으로 재분석 필요(DB 업데이트)
-    # ids = str(auto_id).replace('[','').replace(']','').replace("'",'')
+    # auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()]
+    # ids = str(auto_id).replace('[','').replace(']','').replace("'",'').strip()
     # ids = ids.split(',')
     # for i in ids[1:]:
     #     if i == 'tw.momoring':
     #         continue
     #     print(i.strip())
-    #     result = get_rank(user_id = i.strip())
+        # result = get_rank(user_id = i.strip())
     #     save_rank(result, isUpdate = False)
     print("--- %s seconds ---" % (time.time() - start_time))
 

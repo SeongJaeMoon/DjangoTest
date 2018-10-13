@@ -89,7 +89,9 @@
             </aside>
             <!-- END: SIDEBAR -->
             <section class="content">
-                {{ images|get_images }}
+                {% for i in images %}
+                    <a href="#myModal" class="action" data-toggle="modal"><img src='{{ i }}' style="width: 300px; height:300px;"></a>
+                {% endfor %}
                 <!-- END: CONTENT -->
             </section>
         </div>
