@@ -41,7 +41,10 @@
     <div class="wrapper">
      <!-- HEAD NAV -->
     <div class="navbar navbar-default navbar-static-top navbar-main" role="navigation">
-            <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+        </div>
+        <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
             <input type="hidden" name='csrfmiddlewaretoken' value="{{ csrf_token }}">
             <div class="input-group">
                 <div class="input-group-prepend">
@@ -51,29 +54,6 @@
                 <button class="btn btn-info" type="submit">검색</button>
             </div>    
         </form>
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
-        </div>
-        <ul class="nav navbar-nav navbar-right">
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">새로운 소식(<b>2</b>)</a>
-                <ul class="dropdown-menu notify-drop" style="position: absolute;">
-                    <!-- notify content -->
-                    <div class="drop-content">
-                        <li>
-                            <div class="col-md-5 col-sm-5 col-xs-5">
-                                <div class="notify-img">
-                                    <a href="#"><img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"></a>
-                                    <p>{{parsing.ids}}</p>     
-                                    <p class="time" style="margin-top: 15px;">30</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                    </div>
-                </ul>
-            </li>          
-        </ul>
     </div>
     <!-- END: HEAD NAV -->
     <!-- BODY -->
@@ -89,10 +69,82 @@
             </aside>
             <!-- END: SIDEBAR -->
             <section class="content">
+                <div class="main-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel ">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="text-align: center;">장소 태그 Top 10</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="map"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="text-align: center;">Temp</h3>
+                                </div>
+                                <div class="panel-body"> 
+                                    <p>Temp</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="text-align: center;">Temp</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Temp</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="panel ">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="text-align: center;">Temp</h3>
+                                </div>
+                                <div class="panel-body">
+                                    <p>Temp</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- END: CONTENT -->
             </section>
         </div>
         <!-- END: BODY -->
     </div>
+    <script type="text/javascript">
+        var places = "{{ places|get_places }}"
+        var pvalues = "{{ places|get_places_value }}"
+        places = places.replace('[','').replace(']','').replace("'",'').split(',');
+        pvalues = pvalues.replace('[','').replace(']','').replace("'",'').split(',');
+        var len = places.length;
+        var newPlaces = [];
+        var newPValues = [];
+        for(var i = 0; i < len; ++i){
+            newPlaces.push(places[i].replace("'",''));
+            newPValues.push(parseInt(pvalues[i].replace("'",'')));
+        }
+        console.log(newPlaces, newPValues);
+    </script>
+
+    <!-- <script type="text/javascript">
+        var map;
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: -34.397, lng: 150.644},
+            zoom: 8
+        });
+      }
+    </script> -->
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa1-OAbKJx0mf-kq2DN3tQArOfj2o36GE&callback=initMap"
+    async defer></script> -->
 </body>
 </html>

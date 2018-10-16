@@ -33,7 +33,7 @@ FILE_DIR = '/Users/moonseongjae/Proejct_sns/factory/{}/' # 경로 문자열 포�
 HEADER = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
 }
-# 인스타그램 메인 -> id의 변화에 따른 update 결과 추가 하기! 추가, 삭제
+# 인스타그램 메인 -> id의 변화에 따른 update 결과(추가, 삭제)dd
 def instagram(keyword: "user id", isUpdate = True):
     try:
         options = webdriver.ChromeOptions()
@@ -50,26 +50,31 @@ def instagram(keyword: "user id", isUpdate = True):
         total = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/header/section/ul/li[1]/a/span') # 총 게시물 수
         total_len = int(str(total.text).replace(',', '')) # 게시물 수
         result.append(total_len) # 게시물 총 수, index 1
-        print(keyword + ' 총 게시물:', total_len)
+        print(keyword + ' total_len-> ', total_len)
 
         pro_img = driver.find_element_by_xpath('//*[@id="react-root"]/section/main/div/header/div/div/span/img')
         result.append(pro_img.get_attribute('src')) # 프로필 이미지, index: 2
 
+        # ID에 따른 DB 값 받아오기
         if isUpdate:
             user_data = ParsingData.objects.get(ids=keyword)
             save_total = int(user_data.total)
-            print('save_total', save_total)
-            if not (total_len > save_total): # Update이면서, 새로운 게시물이 없다면 
-                return keyword, False # 바로 return (사용자 아이디, 변경 사항 없음)
-            else:
-                user_data.profile_img = str(pro_img.get_attribute('src'))
-                user_data.total = total_len
-                user_data.save()
+            print('save_total-> ', save_total)
+            
+            user_data.profile_img = str(pro_img.get_attribute('src'))
+            user_data.total = total_len
+            user_data.save()            
 
             upload = [u.link for u in UploadData.objects.filter(user = user_data)] 
+            # driver.execute_script('window.scrollTo(0, document.body.scrollHeight)') # 자동 스크롤 내리기
             time.sleep(4)
             links = [i.get_attribute('href') for i in driver.find_elements_by_css_selector('div.v1Nh3 > a')] # 연결 주소 리스트
             new_links = list(set(links) - set(upload)) # 기존의 주소에 없는 새로 찾은 주소만 반환
+            
+            if not new_links:
+                return keyword, False # 바로 return (사용자 아이디, 변경 사항 없음)
+            # if not (total_len > save_total): # Update이면서, 새로운 게시물이 없다면 
+            #     return keyword, False # 바로 return (사용자 아이디, 변경 사항 없음)
         else:         
             new_links = []
             break_point = 0
@@ -245,25 +250,29 @@ def update_video(keyword):
     finally:
         print(keyword, time.time() - start)
         driver.quit()
-        
+
 if __name__ == "__main__":
     # 주기적으로 데이터 크롤링 필요(cron|nano)
     start_time = time.time()
     try:
-        isNewId, isNewValue = instagram('ohttomom', isUpdate=False)
-        if isNewValue:
-            save_rank(analysis.get_rank(user_id = isNewId), isUpdate = False)
-        # auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
         # 주기적으로 Video 업데이트(48시간)
+        auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
         # for i in auto_id:
         #     update_video(i) # video DB Update        
-        
+
         # 주기적으로 Data Update
-        # isNewData = []
-        # isUpdate = [True for i in range(len(auto_id))]
-        # with Pool(processes = 4) as p:
-            # isNewId, isNewValue = p.starmap(instagram, zip(auto_id, isUpdate))
-            # isNewData.append([isNewId, isNewValue])
+        is_update = [True for i in range(len(auto_id))]
+        
+        # Data Update
+        with Pool(processes = 4) as p:
+            is_new_data = p.starmap(instagram, zip(auto_id, is_update))
+            print(is_new_data)
+        
+        # BasicStatistic Update
+        for i in is_new_data:
+            if i[1]:
+                print('update-> ', i[0])
+                analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)               
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

@@ -25,7 +25,6 @@
     <script type="text/javascript">
     $(document).ready(function(){
         $("button#btn_change").on('click', function(){
-            $('.spinner').css('display', '');
             var temp = $(this).val(); // 기준 -> 기본은 1(시간), 변경시 2(날짜)
             var dtlabel = "";
             if(temp == 1){
@@ -47,14 +46,11 @@
                            'ids': "{{ parsing.ids }}",
                            'csrfmiddlewaretoken': '{{ csrf_token }}'},    
                     success: function(data){
-                        // console.log(typeof(data), data);
                         changeChart(dtlabel, data);
-                        $('.spinner').css('display', 'none');
                     },
                     dataType: 'json',
                     error: function(request, status, error){
                         alert(status +": "+ error);
-                        $('.spinner').css('display', 'none');
                     }
             });
         });
@@ -74,6 +70,14 @@
             }
             });
         };
+        $('#gallery-view').on('click', function(){
+            $('.spinner').show();
+            $('.body').css('opacity', '0.5');
+        });
+        $('#video-view').on('click', function(){
+            $('.spinner').show();
+            $('.body').css('opacity', '0.5');
+        });
     });
     </script>
     <script type="text/javascript">
@@ -87,10 +91,11 @@
     </script>
 </head>
 <body> 
+<body> 
     <div class="wrapper">
      <!-- HEAD NAV -->
     <div class="navbar navbar-default navbar-static-top navbar-main" role="navigation">
-            <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
+        <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
             <input type="hidden" name='csrfmiddlewaretoken' value="{{ csrf_token }}">
             <div class="input-group">
                 <div class="input-group-prepend">
@@ -101,7 +106,14 @@
             </div>    
         </form>
         <div class="navbar-header">
-            <a class="navbar-brand" href="https://www.instagram/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+            <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+            <div class="spinner" style="display: none;">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
         </div>
         <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
@@ -131,22 +143,15 @@
             <aside class="sidebar">
                 <ul class="nav" style="display:inline-block; margin: 5px;">
                     <li class="active" style="margin: 5px;"><a href="#"></i>Dashboard</a></li>
-                    <li style="margin: 5px;"><a href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
-                    <li style="margin: 5px;"><a href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
-                    <li style="margin: 5px;"><a href="{% url 'video' ids=parsing.ids %}">Video</a></li> 
+                    <li style="margin: 5px;"><a id="anlaysis-view" href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
+                    <li style="margin: 5px;"><a id="gallery-view" href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
+                    <li style="margin: 5px;"><a id="video-view" href="{% url 'video' ids=parsing.ids %}">Video</a></li> 
                 </ul>
             </aside>
             <!-- END: SIDEBAR -->
             <section class="content">
                 <ol class="breadcrumb">
-                    <li class="active"><strong style="color: blue;">총 게시물: </strong>{{parsing.total}}, <strong style="color: blue;">생성일: </strong>{{parsing.created_at}}</li>
-                    <div class="spinner" style="display: none;">
-                            <div class="rect1"></div>
-                            <div class="rect2"></div>
-                            <div class="rect3"></div>
-                            <div class="rect4"></div>
-                            <div class="rect5"></div>
-                    </div>
+                    <li class="active"><strong style="color: blue;">총 게시물: </strong>{{parsing.total}}, <strong style="color: blue;">생성일: </strong>{{parsing.created_at}}, <strong style="color: blue;">최종 수정일: </strong>{{parsing.updated_at}}</li>
                 </ol>
                 <div class="header">
                     <div class="col-md-12">
@@ -202,7 +207,6 @@
                                         <div class="pie-chart">
                                             <canvas id="pieChart" width="500" height="500"></canvas>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>

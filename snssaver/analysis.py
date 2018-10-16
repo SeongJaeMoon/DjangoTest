@@ -143,9 +143,9 @@ def get_mv(data, m):
     return result
 
 # 사용자 기본 통계값 저장 -> isUpdate: 사용자 통계 값 변경 되었을 경우 사용
-def save_rank(data, isUpdate = False):
+def save_rank(data, is_update = False):
     try:
-        if not isUpdate:
+        if not is_update:
             BasicStatistic.objects.create(ids=data['ids'], 
                                           hashtag=data['hash'],
                                           wording=data['wording'],
@@ -174,7 +174,7 @@ def save_rank(data, isUpdate = False):
     except Exception as e:
         print(e)
     finally:
-        print('analysis done')
+        print('analysis done-> ', data['ids'])
 
 def times_date(data): # 날짜 반환 -> 10개
     result = []
@@ -196,12 +196,20 @@ def times_hours_val(data): # 시간에 따른 게시물 수 반환
     val = [int(key_value[k]) for k in range(1, len(key_value), 2)]
     return val
 
+def get_places(data): # 사용자가 자주 태그한 장소 Top10 장소 반환
+    keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", data)]    
+    return keys[:10] # 장소 1~10
+
+def get_places_value(data): # 사용자가 자주 태그한 장소 Top10 값 반환
+    values = [str(d).replace('),','') for d in re.findall('\d*\),', data)]    
+    return values[:10] # 값 1~10
+
 if __name__ == "__main__":
     start_time = time.time()
     # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
-    for i in ['tw.momoring', 'superstar_jhs']:
-        result = get_rank(user_id = i)
-        save_rank(result, isUpdate = True)
+    # for i in ['tw.momoring', 'superstar_jhs']:
+    result = get_rank(user_id = 'yubi_190')
+    save_rank(result, is_update = False)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 

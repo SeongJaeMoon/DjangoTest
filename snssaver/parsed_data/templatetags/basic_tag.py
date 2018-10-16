@@ -38,7 +38,7 @@ def users_data(data): # 많이 댓글단 유저 정보
 @register.filter # 총 좋아요 갯수
 def likes_data(data):
     result = 0
-    for m in re.findall('\d', data):
+    for m in re.findall('\d+', data):
         result += int(m)
     return mark_safe(result)
 
@@ -48,18 +48,6 @@ def mv_data(data): # 좋아요 이동평균 10개 반환
     for m in re.findall('([0-9]*\.[0-9]+)', data): 
         result.append(float(m))
     return mark_safe(result[len(result) - 10:])
-
-@register.filter
-def times_date(data): # 날짜 반환 -> 10개
-    result = []
-    dates = re.findall('(\d*\-\d*\-\d*)', data)
-    return mark_safe(dates[len(dates)-10:])
-
-@register.filter
-def times_value(data): # 날짜에 따른 게시물 수 반환 -> 10개
-    digits = [str(d).replace(')','') for d in re.findall('\d*\)', data)]
-    digits = [int(d) for d in digits]
-    return mark_safe(digits[len(digits)-10:])
 
 @register.filter 
 def times_hours_key(data): # 시간 반환
@@ -79,8 +67,11 @@ def get_users(data): # 사용자 정보
     return mark_safe(result)
 
 @register.filter 
-def get_places(data): # 사용자가 자주 태그한 장소 Top10
-    values = [str(d).replace('),','') for d in re.findall('\d*\),', data)]
+def get_places(data): # 사용자가 자주 태그한 장소 Top10 장소 반환
     keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", data)]
-    print(len(keys), keys[:10])
-    print(len(values), values[:10])
+    return mark_safe(keys[:10])
+
+@register.filter
+def get_places_value(data): # 사용자가 자주 태그한 장소 Top10 값 반환
+    values = [str(d).replace('),','').strip() for d in re.findall('\d*\),', data)]    
+    return mark_safe(values[:10])

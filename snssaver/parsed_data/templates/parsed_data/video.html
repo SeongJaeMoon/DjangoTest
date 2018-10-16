@@ -36,6 +36,20 @@
                     }
                 }
             });
+            $('#gallery-view').on('click', function(){
+                $('.spinner').show();
+                $('.body').css('opacity', '0.5');
+            });
+            $('#video-view').on('click', function(){
+                $('.spinner').show();
+                $('.spinner').show();
+                $('.body').css('opacity', '0.5');
+            });
+            $('.video-item').on('click', function(){
+                $('.spinner').show();
+                $('.spinner').show();
+                $('.body').css('opacity', '0.5');
+            });
         });
     </script>
     <script type="text/javascript">
@@ -65,13 +79,21 @@
         </form>
         <button id="play-all" class="btn btn-primary">일괄 재생</button>
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+            <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+            <span>총: <strong>{{ length }}</strong> 개의 영상을 찾았습니다.</span>
+            <div class="spinner" style="display: none;">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
         </div>
-        <ul class="nav navbar-nav navbar-right">
+        <!-- <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">새로운 소식(<b>2</b>)</a>
                 <ul class="dropdown-menu notify-drop" style="position: absolute;">
-                    <!-- notify content -->
+                    notify content
                     <div class="drop-content">
                         <li>
                             <div class="col-md-5 col-sm-5 col-xs-5">
@@ -86,7 +108,7 @@
                     </div>
                 </ul>
             </li>          
-        </ul>
+        </ul> -->
     </div>
     <!-- END: HEAD NAV -->
     <!-- BODY -->
@@ -96,7 +118,7 @@
                 <ul class="nav" style="display:inline-block; margin: 5px;">
                     <li style="margin: 5px;"><a href="http://localhost:8000/"></i>Dashboard</a></li>
                     <li style="margin: 5px;"><a href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
-                    <li style="margin: 5px;"><a href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
+                    <li style="margin: 5px;"><a id="gallery-view" href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
                     <li class="active" style="margin: 5px;"><a href="#">Video</a></li> 
                 </ul>
             </aside>
@@ -126,11 +148,11 @@
         {% if videos.number == i %}
             <li class="page-item active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
         {% else %}
-            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            <li class="page-item"><a class="video-item page-link" href="?page={{ i }}">{{ i }}</a></li>
         {% endif %}
         {% endfor %}
         {% if videos.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ videos.next_page_number }}">&raquo;</a></li>
+            <li class="page-item"><a class="video-item page-link" href="?page={{ videos.next_page_number }}">&raquo;</a></li>
         {% else %}
             <li class="page-item disabled"><span>&raquo;</span></li>
         {% endif %}
