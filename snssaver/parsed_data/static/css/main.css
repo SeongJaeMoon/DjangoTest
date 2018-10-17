@@ -338,11 +338,6 @@ a:focus {
   margin-top: 5px;
   text-transform: uppercase;
 }
-
-.chart-data{
-  width: 800px;
-  height: 800px;
-}
 /*
  * Images
  */
@@ -1116,6 +1111,9 @@ body.fixed_header.fixed_menu .wrapper {
 .sidebar.collapsing {
   display: block;
 }
+.sidebar .nav li > a.sr-only {
+  position: absolute;
+}
 .sidebar .nav li > a {
   color: #393939;
   padding: 6px 10px 6px 15px;
@@ -1123,7 +1121,6 @@ body.fixed_header.fixed_menu .wrapper {
   font-size: 15px;
   display: block;
 }
-
 .sidebar .nav li > a:focus,
 .sidebar .nav li > a:hover {
   background-color: #f7f7f7;
@@ -1131,7 +1128,6 @@ body.fixed_header.fixed_menu .wrapper {
   border-left: solid 3px #428bca;
   color: #428bca;
 }
-
 .sidebar .nav .active > a,
 .sidebar .nav .active > a:hover,
 .sidebar .nav .active > a:focus {
@@ -1150,7 +1146,6 @@ body.fixed_header.fixed_menu .wrapper {
   .sidebar a {float: left;}
   .content {margin-left: 0;}
 }
-
 /* On screens that are less than 400px, display the bar vertically, instead of horizontally */
 @media screen and (max-width: 400px) {
   .sidebar a {

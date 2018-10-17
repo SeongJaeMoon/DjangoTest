@@ -21,7 +21,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "snssaver.settings")
 import django
 django.setup()
 # 모델 가져오기
-from parsed_data.models import ParsingData, UploadData, ImgData, VideoData, Comment
+from parsed_data.models import ParsingData, UploadData, ImgData, VideoData, Comment, BasicStatistic
 
 # python 파일의 위치
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +34,7 @@ HEADER = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
 }
 # 인스타그램 메인 -> id의 변화에 따른 update 결과(추가, 삭제)dd
-def instagram(keyword: "user id", isUpdate = True):
+def instagram(keyword: "user id", is_update = True):
     try:
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
@@ -56,7 +56,7 @@ def instagram(keyword: "user id", isUpdate = True):
         result.append(pro_img.get_attribute('src')) # 프로필 이미지, index: 2
 
         # ID에 따른 DB 값 받아오기
-        if isUpdate:
+        if is_update:
             user_data = ParsingData.objects.get(ids=keyword)
             save_total = int(user_data.total)
             print('save_total-> ', save_total)
@@ -148,19 +148,20 @@ def instagram(keyword: "user id", isUpdate = True):
             except:
                 pass
             data_list.append(datas)
+        print(data_list)
         result.append(data_list) # index 4 ~
-        save_db(result, isUpdate)
+        save_db(result, is_update)
         return keyword, True # (사용자 아이디, 변경 사항 있음) -> 데이터 분석 DB 업데이트!
     except Exception as e:
-        print(e)
+        print(keyword, e)
     finally:
         driver.quit()
 
 # DB 값 저장 (데이터가 추가되면 필요한 값 추출)
-def save_db(data: "user data-list", isUpdate = False):
+def save_db(data: "user data-list", is_update = False):
     # ParsingData, UploadData, ImgData, VideoData, Comment
     try:
-        if isUpdate: # Update 쿼리면 바로 GET
+        if is_update: # Update 쿼리면 바로 GET
             parsing = ParsingData.objects.get(ids=data[0])
         else: # Create 쿼리면 Create
             parsing = ParsingData.objects.create(ids = data[0], total = data[1], profile_img = data[2])
@@ -168,27 +169,41 @@ def save_db(data: "user data-list", isUpdate = False):
         for d in data[3]:
             # [k:v, k:v, k:v,...]
             content = ''
-            if d['content']:
-                content = str(d['content']).replace('[', '').replace(']', '')
+            try:
+                if d['content']:
+                    print(d['content'])
+                    content = str(d['content']).replace('[', '').replace(']', '')
+            except:
+                pass
             upload = UploadData.objects.create(user = parsing, 
                                                link = d['link'], 
                                                place = d['place'], 
                                                time = d['time'], 
                                                like = d['like'], 
                                                content = content)
-            if d['imgs']:
-                for img in d['imgs']: 
-                    ImgData.objects.create(list_img = upload, 
-                                           imgs = img)
-            if d['videos']:
-                for video in d['videos']:
-                    VideoData.objects.create(list_video = upload, 
-                                             vidoes = video)
-            for idx in d['reply']:
-                user, comment = idx[0], idx[1]
-                Comment.objects.create(comm = upload, 
-                                       com_user = user, 
-                                       comment = comment)
+            try:                                               
+                if d['imgs']:
+                    for img in d['imgs']: 
+                        ImgData.objects.create(list_img = upload, 
+                                            imgs = img)
+            except:
+                pass
+            try:
+                if d['videos']:
+                    for video in d['videos']:
+                        VideoData.objects.create(list_video = upload, 
+                                                vidoes = video)
+            except:
+                pass
+            try:
+                if d['reply']:
+                    for idx in d['reply']:
+                        user, comment = idx[0], idx[1]
+                        Comment.objects.create(comm = upload, 
+                                               com_user = user, 
+                                               comment = comment)
+            except:
+                pass
     except Exception as e:
         print(e)
     finally:
@@ -256,9 +271,9 @@ if __name__ == "__main__":
     start_time = time.time()
     try:
         # 주기적으로 Video 업데이트(48시간)
-        auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
+        # auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
         # for i in auto_id:
-        #     update_video(i) # video DB Update        
+        #     update_video(i) # video DB Update   
 
         # 주기적으로 Data Update
         is_update = [True for i in range(len(auto_id))]

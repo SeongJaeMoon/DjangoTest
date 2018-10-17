@@ -2,10 +2,14 @@ import re
 from collections import Counter
 from datetime import datetime
 from konlpy.tag import Okt
+from gensim import models, corpora
+from gensim.models import word2vec
+from collections import Counter
 import os
 import time
 import json
-import numpy as np
+import codecs
+import numpy as np 
 import pandas as pd
 import dateutil.parser
 # Python이 실행될 때 DJANGO_SETTINGS_MODULE이라는 환경 변수에 현재 프로젝트의 settings.py 파일 경로를 등록
@@ -13,8 +17,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "snssaver.settings")
 # 장고를 가져와 장고 프로젝트를 사용할 수 있도록 환경을 만들기
 import django
 django.setup()
-
+from multiprocessing import cpu_count
 from parsed_data.models import ParsingData, UploadData, ImgData, VideoData, Comment, BasicStatistic 
+
+FACTORY = '/Users/moonseongjae/Project_sns/factory/'
 
 # 사용자 기본 통계값
 def get_rank(user_id, defualt = 'tw.momoring'):
@@ -176,40 +182,118 @@ def save_rank(data, is_update = False):
     finally:
         print('analysis done-> ', data['ids'])
 
-def times_date(data): # 날짜 반환 -> 10개
+# 날짜 반환 -> 10개
+def times_date(data): 
     result = []
     dates = re.findall('(\d*\-\d*\-\d*)', data)
     return dates[:10]
-
-def times_value(data): # 날짜에 따른 게시물 수 반환 -> 10개
+# 날짜에 따른 게시물 수 반환 -> 10개
+def times_value(data):
     digits = [str(d).replace(')','') for d in re.findall('\d*\)', data)]
     digits = [int(d) for d in digits]
     return digits[:10]
-
-def times_hours_key(data): # 시간 반환
+# 시간 반환
+def times_hours_key(data):
     key_value = re.findall('\d+', data)
     key = [key_value[k] for k in range(0, len(key_value), 2)]
     return key
-
-def times_hours_val(data): # 시간에 따른 게시물 수 반환
+# 시간에 따른 게시물 수 반환
+def times_hours_val(data):
     key_value = re.findall('\d+', data)
     val = [int(key_value[k]) for k in range(1, len(key_value), 2)]
     return val
 
-def get_places(data): # 사용자가 자주 태그한 장소 Top10 장소 반환
+# 사용자가 자주 태그한 장소 Top10 장소 반환
+def get_places(data):
     keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", data)]    
     return keys[:10] # 장소 1~10
 
-def get_places_value(data): # 사용자가 자주 태그한 장소 Top10 값 반환
+# 사용자가 자주 태그한 장소 Top10 값 반환
+def get_places_value(data):
     values = [str(d).replace('),','') for d in re.findall('\d*\),', data)]    
     return values[:10] # 값 1~10
+
+# 코멘트 Word Embedding 
+''' 
+keyword: User ID
+Update: Train Data 추가
+init: 초기화 여부
+is_comment: 사용자 전용 코멘트 <-> 댓글 구분
+file_name: 사용자 전용 코멘트 <-> 댓글 구분 파일 이름
+'''
+def word_embedding(keyword, init=True, is_comment=False, file_name=''):
+    result = [] # Word2Vec 저장 결과 리스트 선언
+    queries = {} # 시용자의 코멘트 내용 중 많이 나온 단어를 계산할 딕셔너리 선언
+    t = Okt()
+    uid = ParsingData.objects.get(ids=keyword) # id 가져오기
+    upload = UploadData.objects.filter(user=uid) # upload 정보 가져오기
+    
+    # 불 필요한 단어는 제거하고 리스트 생성
+    if is_comment:
+        content = []
+        for up in upload: # upload 정보 가져오기
+            temp = [str(co.comment).replace("'"+ keyword +"',", '').replace(' ', '') for co in Comment.objects.filter(comm=up)]
+            for c in temp:
+                content.append(c)
+    else:
+        content = [str(up.content).replace("'"+ keyword +"',", '').replace(' ', '') for up in upload]
+          
+    for con in content:
+        words = t.pos(con, stem=True, norm=True)
+        r = []
+        for word in words:
+            if not (word[1] in ["Josa", "Eomi", "Punctuation"]) and len(word[0]) > 1:
+                r.append(word[0])
+                if not (word[0] in queries):
+                    queries[word[0]] = 0
+                queries[word[0]] += 1
+
+        rtemp = (" ".join(r)).strip()
+        result.append(rtemp)
+    
+    temp_file = FACTORY + file_name + keyword+'.wakati' # LineSentence로 읽어들일 데이터 저장
+    model_file = FACTORY + file_name + keyword+'.model' # 실제 학습에 사용되는 모델 파일 
+    
+    if init: # 모델 초기화(저장)
+        with open(temp_file, 'w', encoding='utf-8') as fp:
+            fp.write('\n'.join(result))
+        data = word2vec.LineSentence(temp_file)
+        model = word2vec.Word2Vec(data, size=200, window=10, workers=cpu_count(), min_count=2, iter=100, sg=1)
+        model.save(model_file)
+        print('init done')
+    else:
+        # 모델 트레이닝 업데이트
+        print('update done')
+
+    print('temp size: ', os.path.getsize(temp_file)/1024, 'kb')
+    print('model size: ', os.path.getsize(model_file)/1024, 'kb')
+
+    model = word2vec.Word2Vec.load(model_file)
+    queries = sorted(queries.items(), key=lambda x:x[1], reverse=True)
+    ret = []
+    try:
+        for q in queries[:5]:
+            print('-----'+q[0]+'-----')
+            print(model.wv.most_similar(positive=[str(q[0])]))
+            print('----------')
+            ret.append({q[0]:model.wv.most_similar(positive=[str(q[0])])})
+    except KeyError as e:
+        print(e)
+    return ret
 
 if __name__ == "__main__":
     start_time = time.time()
     # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
-    # for i in ['tw.momoring', 'superstar_jhs']:
-    result = get_rank(user_id = 'yubi_190')
-    save_rank(result, is_update = False)
+    auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
+    for i in auto_id:
+        if not (i == 'ji_na9'):
+            word_embedding(i, init=True, is_comment=False)
+            word_embedding(i, init=True, is_comment=True, file_name='re_')
+    
+    # result1 = word_embedding('ji_na9', init=False, is_comment=False)
+    # result2 = word_embedding('ji_na9', init=False, is_comment=True, file_name='re_')
+    # print(result1)
+    # print(result2)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 

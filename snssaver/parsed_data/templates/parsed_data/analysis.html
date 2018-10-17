@@ -24,7 +24,26 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript">
     $(document).ready(function(){
-
+        $('#gallery-view').on('click', function(){
+            $('.spinner').show();
+            $('.body').css('opacity', '0.5');
+        });
+        $('#video-view').on('click', function(){
+            $('.spinner').show();
+            $('.body').css('opacity', '0.5');
+        });
+        $('#comment-view').on('click', function(){
+            $('.spinner').show();
+            $('.body').css('opacity', '0.5');
+        });
+        $('.navbar-toggle').on('click', function(){
+            var isExpanded = $(this).attr('aria-expanded');
+            if (isExpanded == 'true'){
+                $('.sidebar').hide();
+            }else{
+                $('.sidebar').show();
+            }
+        });
     });
     </script>
     <script type="text/javascript">
@@ -41,9 +60,6 @@
     <div class="wrapper">
      <!-- HEAD NAV -->
     <div class="navbar navbar-default navbar-static-top navbar-main" role="navigation">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
-        </div>
         <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
             <input type="hidden" name='csrfmiddlewaretoken' value="{{ csrf_token }}">
             <div class="input-group">
@@ -54,6 +70,35 @@
                 <button class="btn btn-info" type="submit">검색</button>
             </div>    
         </form>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+            <li class="visible-xs">
+                <a href="#" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar">
+                    <span class="sr-only" style="color:powderblue;">Toggle navigation</span>
+                    <i class="fa fa-ellipsis-h"></i>
+                </a>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">새로운 소식(<b>2</b>)</a>
+                <ul class="dropdown-menu notify-drop" style="position: absolute;">
+                    <!-- notify content -->
+                    <div class="drop-content">
+                        <li>
+                            <div class="col-md-5 col-sm-5 col-xs-5">
+                                <div class="notify-img">
+                                    <a href="#"><img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"></a>
+                                    <p>{{parsing.ids}}</p>     
+                                    <p class="time" style="margin-top: 15px;">30</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                    </div>
+                </ul>
+            </li>          
+        </ul>
     </div>
     <!-- END: HEAD NAV -->
     <!-- BODY -->
@@ -62,9 +107,10 @@
             <aside class="sidebar">
                 <ul class="nav" style="display:inline-block; margin: 5px;">
                     <li style="margin: 5px;"><a href="http://localhost:8000/"></i>Dashboard</a></li>
-                    <li class="active" style="margin: 5px;"><a href="#">Analysis</a></li>
-                    <li style="margin: 5px;"><a href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
-                    <li style="margin: 5px;"><a href="{% url 'video' ids=parsing.ids %}">Video</a></li> 
+                    <li class="active" style="margin: 5px;"><a id="analysis-view" href="#">Analysis</a></li>
+                    <li style="margin: 5px;"><a id="comment-view" href="{% url 'comment' ids=parsing.ids %}">Comment</a></li>
+                    <li style="margin: 5px;"><a id="gallery-view" href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
+                    <li style="margin: 5px;"><a id="video-view" href="{% url 'video' ids=parsing.ids %}">Video</a></li> 
                 </ul>
             </aside>
             <!-- END: SIDEBAR -->
@@ -77,6 +123,7 @@
                                     <h3 class="panel-title" style="text-align: center;">장소 태그 Top 10</h3>
                                 </div>
                                 <div class="panel-body">
+                                    <!-- Topology & Geocoding -->
                                     <div id="map"></div>
                                 </div>
                             </div>
@@ -87,7 +134,9 @@
                                     <h3 class="panel-title" style="text-align: center;">Temp</h3>
                                 </div>
                                 <div class="panel-body"> 
-                                    <p>Temp</p>
+                                    <!-- Classification -->
+                                    <!-- Who are, Where are, Labeling -->
+                                    <p>Image Processing</p>
                                 </div>
                             </div>
                         </div>
@@ -99,6 +148,8 @@
                                     <h3 class="panel-title" style="text-align: center;">Temp</h3>
                                 </div>
                                 <div class="panel-body">
+                                    <!-- Behavior Pattern -->
+                                    <!-- 날짜, 시간, 글, 사진, etc. -->
                                     <p>Temp</p>
                                 </div>
                             </div>
@@ -109,6 +160,8 @@
                                     <h3 class="panel-title" style="text-align: center;">Temp</h3>
                                 </div>
                                 <div class="panel-body">
+                                    <!-- Behavior Pattern -->
+                                    <!-- 날짜, 시간, 글, 사진, etc. -->
                                     <p>Temp</p>
                                 </div>
                             </div>
