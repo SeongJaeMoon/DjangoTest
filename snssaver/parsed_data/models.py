@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.utils import timezone
 from django import forms
 from django.forms import ModelForm
@@ -85,6 +86,18 @@ class BasicStatistic(models.Model):
     def get_absolute_url(self): # redirect 시 활용
         return reverse('parsed_data:ids', args=[self.ids])
 
+# Word Embedding 저장 모델
+class WordStatistic(models.Model):
+    ids = models.TextField() # 유저 아이디
+    user_words = ArrayField(models.CharField(max_length=200), blank=True) # 유저 워드 임베딩 키
+    com_words =  ArrayField(models.CharField(max_length=200), blank=True) # 댓글 워드 임베딩 키
+    
+    def __str__(self):
+        return self.ids
+
+# Text Emotion 저장 모델
+
+# ImageProcessing 저장 모델
 
 
         

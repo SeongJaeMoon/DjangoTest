@@ -59,14 +59,14 @@ def instagram(keyword: "user id", is_update = True):
         if is_update:
             user_data = ParsingData.objects.get(ids=keyword)
             save_total = int(user_data.total)
-            print('save_total-> ', save_total)
+            print(keyword, ' save_total-> ', save_total)
             
             user_data.profile_img = str(pro_img.get_attribute('src'))
             user_data.total = total_len
             user_data.save()            
 
             upload = [u.link for u in UploadData.objects.filter(user = user_data)] 
-            # driver.execute_script('window.scrollTo(0, document.body.scrollHeight)') # 자동 스크롤 내리기
+            driver.execute_script('window.scrollTo(0, document.body.scrollHeight)') # 자동 스크롤 내리기
             time.sleep(4)
             links = [i.get_attribute('href') for i in driver.find_elements_by_css_selector('div.v1Nh3 > a')] # 연결 주소 리스트
             new_links = list(set(links) - set(upload)) # 기존의 주소에 없는 새로 찾은 주소만 반환
@@ -148,7 +148,7 @@ def instagram(keyword: "user id", is_update = True):
             except:
                 pass
             data_list.append(datas)
-        print(data_list)
+        # print(data_list)
         result.append(data_list) # index 4 ~
         save_db(result, is_update)
         return keyword, True # (사용자 아이디, 변경 사항 있음) -> 데이터 분석 DB 업데이트!
@@ -171,7 +171,7 @@ def save_db(data: "user data-list", is_update = False):
             content = ''
             try:
                 if d['content']:
-                    print(d['content'])
+                    # print(d['content'])
                     content = str(d['content']).replace('[', '').replace(']', '')
             except:
                 pass
@@ -207,7 +207,7 @@ def save_db(data: "user data-list", is_update = False):
     except Exception as e:
         print(e)
     finally:
-        print('save done')
+        print(data[0], ' save done')
 # 이미지 저장 -> 보류
 def save_img(path_title, link):
     try:
@@ -270,24 +270,24 @@ if __name__ == "__main__":
     # 주기적으로 데이터 크롤링 필요(cron|nano)
     start_time = time.time()
     try:
-        # 주기적으로 Video 업데이트(48시간)
-        # auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
-        # for i in auto_id:
-        #     update_video(i) # video DB Update   
-
-        # 주기적으로 Data Update
-        is_update = [True for i in range(len(auto_id))]
+        auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
+        is_update = [False for i in range(len(auto_id))] # Update 여부
+        
+        # # 주기적으로 Video 업데이트(48시간)
+        for i in auto_id:
+            update_video(i) # video DB Update
         
         # Data Update
         with Pool(processes = 4) as p:
             is_new_data = p.starmap(instagram, zip(auto_id, is_update))
             print(is_new_data)
         
-        # BasicStatistic Update
+        # # BasicStatistic Update
         for i in is_new_data:
-            if i[1]:
-                print('update-> ', i[0])
-                analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)               
+            if i is not None:
+                if i[1]:
+                    print('update-> ', i[0])
+                    analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)               
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

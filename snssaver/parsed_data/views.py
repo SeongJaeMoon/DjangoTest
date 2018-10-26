@@ -1,14 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView, DeleteView
-from django.http import HttpResponseRedirect
-from django.urls import reverse
 from .models import ParsingData, UploadData, ImgData, VideoData, Comment, BasicStatistic
 from django.template import loader
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from analysis import times_hours_key, times_hours_val, times_value, times_date
+from analysis import times_hours_key, times_hours_val, times_value, times_date, word_embedding
 import json
 # Class View 변경 필요
 
@@ -72,9 +69,9 @@ def gallery(request, ids):
     auto_id = [u.ids for u in ParsingData.objects.all()] # 전체 유저 정보
     uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
     result = [] # 결과
-    for up in UploadData.objects.filter(user = uid).order_by('created_at'): # 유저 정보에 해당하는 포스팅 목록
-        for i in ImgData.objects.filter(list_img = up).order_by('created_at'): # 실제 이미지 연결 주소
-            result.append(i)
+    for up in UploadData.objects.filter(user = uid).order_by('-time'): # 유저 정보에 해당하는 포스팅 목록
+        for i in ImgData.objects.filter(list_img = up).order_by('-created_at'): # 실제 이미지 연결 주소
+            result.append([i.imgs, up.time])
 
     page = request.GET.get('page', 1)
     paginator = Paginator(result, 36)
@@ -95,8 +92,8 @@ def video(request, ids):
     auto_id = [u.ids for u in ParsingData.objects.all()]
     uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
     result = [] # 결과
-    for up in UploadData.objects.filter(user = uid).order_by('created_at'): # 유저 정보에 해당하는 포스팅 목록
-        for i in VideoData.objects.filter(list_video = up).order_by('created_at'): # 실제 비디오 연결 주소
+    for up in UploadData.objects.filter(user = uid).order_by('-time'): # 유저 정보에 해당하는 포스팅 목록
+        for i in VideoData.objects.filter(list_video = up).order_by('-updated_at'): # 실제 비디오 연결 주소
             result.append(i)
     page = request.GET.get('page', 1)
     paginator = Paginator(result, 36)
@@ -117,8 +114,8 @@ def comment(request, ids):
     auto_id = [u.ids for u in ParsingData.objects.all()]
     parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
     result = []
-    for up in UploadData.objects.filter(user = parsing).order_by('created_at'):
-        for i in Comment.objects.filter(comm = up).order_by('created_at'):
+    for up in UploadData.objects.filter(user = parsing).order_by('-created_at'):
+        for i in Comment.objects.filter(comm = up).order_by('-created_at'):
             result.append(i)
 
     page = request.GET.get('page', 1)

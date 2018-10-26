@@ -75,3 +75,20 @@ def get_places(data): # 사용자가 자주 태그한 장소 Top10 장소 반환
 def get_places_value(data): # 사용자가 자주 태그한 장소 Top10 값 반환
     values = [str(d).replace('),','').strip() for d in re.findall('\d*\),', data)]    
     return mark_safe(values[:10])
+
+@register.filter
+def get_images(data):
+    result = ''
+    for d in data:
+        time = str(dateutil.parser.parse(d[1]))
+        result += '<a href="#myModal" class="action" data-toggle="modal"><img alt='+ time +' src='+ d[0] +' style="width: 300px; height:300px;"></a>'
+    return mark_safe(result)
+
+# @register.filter
+# def get_word_embedding(data):
+#     data_list = []
+#     for r in data:
+#         key, value = r[0], r[1]
+#         for v in value:
+#             print(v[0], v[1])
+#     return mark_safe(result)

@@ -20,8 +20,10 @@
         $(document).ready(function(){
             $('a.action').on('click', function(e){
                 var src = $(this).find('img');
+                var time = src.attr('alt');
                 var link = src.attr('src');
                 $('#modal-img').attr('src', link);
+                $('.modal-title').html(time);
                 $('#myModal').modal();
             });
             $('#gallery-view').on('click', function(){
@@ -51,7 +53,8 @@
         $( function() {
             var users = "{{ users|get_users }}";
             users = users.split(',')
-            $(".auto-id" ).autocomplete({
+            console.log(users);
+            $(".auto-id").autocomplete({
                 source: users
             });
         });    
@@ -125,9 +128,7 @@
             </aside>
             <!-- END: SIDEBAR -->
             <section class="content">
-                {% for i in images %}
-                    <a href="#myModal" class="action" data-toggle="modal"><img src='{{ i }}' style="width: 300px; height:300px;"></a>
-                {% endfor %}
+                {{ images|get_images }}
                 <!-- END: CONTENT -->
             </section>
         </div>
@@ -161,7 +162,7 @@
             <div class="modal-content">
                 <!-- Modal Header -->
             <div class="modal-header">
-            <h4 class="modal-title">{{ parsing.ids }}</h4>
+            <h4 class="modal-title"></h4>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <!-- Modal body -->
