@@ -1,0 +1,12 @@
+	stim_id	: 자극고유번호. 
+	Lexicality : 어휘성. 1=단어, 2=비단어
+	Stimuli	: 자극 (한글표기)
+	Romanized.Stim : 자극 (로마자표기)
+	POS	: 품사. n=명사, v=동사, adj=형용사, adv=부사
+	NofMeaning : 의미 개수 
+	LenSyll	: 길이 (글자수)
+	Freq	: 빈도
+	Stim_err_M	: 오반응률 평균
+	Stim_err_SD	: 오반응률 표준편차
+	Stim_RT_M	: 반응시간 평균
+	Stim_RT_SD : 반응시간 표준편차

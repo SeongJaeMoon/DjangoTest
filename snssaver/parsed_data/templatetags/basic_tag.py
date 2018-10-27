@@ -84,11 +84,3 @@ def get_images(data):
         result += '<a href="#myModal" class="action" data-toggle="modal"><img alt='+ time +' src='+ d[0] +' style="width: 300px; height:300px;"></a>'
     return mark_safe(result)
 
-# @register.filter
-# def get_word_embedding(data):
-#     data_list = []
-#     for r in data:
-#         key, value = r[0], r[1]
-#         for v in value:
-#             print(v[0], v[1])
-#     return mark_safe(result)

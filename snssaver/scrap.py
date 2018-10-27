@@ -271,18 +271,18 @@ if __name__ == "__main__":
     start_time = time.time()
     try:
         auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
-        is_update = [False for i in range(len(auto_id))] # Update 여부
+        is_update = [True for i in range(len(auto_id))] # Update 여부
         
         # # 주기적으로 Video 업데이트(48시간)
-        for i in auto_id:
-            update_video(i) # video DB Update
+        # for i in auto_id:
+        #     update_video(i) # video DB Update
         
         # Data Update
         with Pool(processes = 4) as p:
             is_new_data = p.starmap(instagram, zip(auto_id, is_update))
             print(is_new_data)
         
-        # # BasicStatistic Update
+        # BasicStatistic Update
         for i in is_new_data:
             if i is not None:
                 if i[1]:

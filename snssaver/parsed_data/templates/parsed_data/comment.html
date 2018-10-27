@@ -23,32 +23,115 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js" type="text/javascript"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript">
-    $(document).ready(function(){
-        $('#gallery-view').on('click', function(){
-            $('.spinner').show();
-            $('.body').css('opacity', '0.5');
-        });
-        $('#video-view').on('click', function(){
-            $('.spinner').show();
-            $('.body').css('opacity', '0.5');
-        });
-        $('#comment-view').on('click', function(){
-            $('.spinner').show();
-            $('.body').css('opacity', '0.5');
-        });
-        $('.comment-item').on('click', function(){
+        $(document).ready(function(){
+            $('#gallery-view').on('click', function(){
                 $('.spinner').show();
                 $('.body').css('opacity', '0.5');
             });
-        $('.navbar-toggle').on('click', function(){
-            var isExpanded = $(this).attr('aria-expanded');
-            if (isExpanded == 'true'){
-                $('.sidebar').hide();
-            }else{
-                $('.sidebar').show();
+            $('#video-view').on('click', function(){
+                $('.spinner').show();
+                $('.body').css('opacity', '0.5');
+            });
+            $('#comment-view').on('click', function(){
+                $('.spinner').show();
+                $('.body').css('opacity', '0.5');
+            });
+            $('#analysis-view').on('click', function(){
+                $('.spinner').show();
+                $('.spinner').show();
+                $('.body').css('opacity', '0.5');
+            });
+            $('.comment-item').on('click', function(){
+                    $('.spinner').show();
+                    $('.body').css('opacity', '0.5');
+                });
+            $('.navbar-toggle').on('click', function(){
+                var isExpanded = $(this).attr('aria-expanded');
+                if (isExpanded == 'true'){
+                    $('.sidebar').hide();
+                }else{
+                    $('.sidebar').show();
+                }
+            });
+            $('.btn-user').on('click', function(){
+                switch($(this).val()){
+                    case '1':
+                        userDataChange(1, 0, 10);
+                        break;
+                    case '2': 
+                        userDataChange(1, 11, 20);
+                        break;
+                    case '3': 
+                        userDataChange(1, 21, 30);
+                        break;
+                    case '4': 
+                        userDataChange(1, 31, 40);
+                        break;
+                    case '5': 
+                        userDataChange(1, 41, 50);
+                        break;
+                }
+            });
+            $('.btn-re').on('click', function(){
+                switch($(this).val()){
+                    case '1':
+                        userDataChange(0, 0, 10);
+                        break;
+                    case '2': 
+                        userDataChange(0, 11, 20);
+                        break;
+                    case '3': 
+                        userDataChange(0, 21, 30);
+                        break;
+                    case '4': 
+                        userDataChange(0, 31, 40);
+                        break;
+                    case '5': 
+                        userDataChange(0, 41, 50);
+                        break;
+                }
+            });
+            function userDataChange(re, start, end){
+                console.log(start, end);
+                var data_key = [];
+                var data_val = [];
+                if (re == 1){
+                    data_key = "{{ data_key|safe }}";
+                    data_val = '{{ data_val|safe }}';
+                }else{
+                    data_key = "{{ re_data_key|safe }}";
+                    data_val = '{{ re_data_val|safe }}';
+                }
+                data_key = data_key.replace('[', '').replace(']', '').split(',');
+                data_val = data_val.replace('[', '').replace(']', '').split(',');
+                var ctx = null;
+                if (re ==1){
+                    ctx = document.getElementById("polar-chart");
+                }else{
+                    ctx = document.getElementById("polar-chart-re");
+                }
+                new Chart(ctx, {
+                    type: 'polarArea',
+                    data: {
+                    labels: data_key.slice(start ,end),
+                    datasets: [
+                        {
+                        label: "Similarity",
+                        backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850",
+                                          "#c45850", "#8e5ea2", "#e8c3b9", "#3cba9f", "#3e95cd"],
+                        data: data_val.slice(start, end)
+                        }
+                    ]
+                    },
+                    options: {
+                    title: {
+                        display: true,
+                        text: 'Word Embedding'
+                    }
+                    }
+                });
             }
         });
-    });
     </script>
     <script type="text/javascript">
     $( function() {
@@ -76,7 +159,6 @@
         </form>
         <div class="navbar-header">
             <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>
-            <span>총: <strong>{{ length }}</strong> 개의 댓글을 찾았습니다.</span>
             <div class="spinner" style="display: none;">
                 <div class="rect1"></div>
                 <div class="rect2"></div>
@@ -119,35 +201,58 @@
             <aside class="sidebar">
                 <ul class="nav" style="display:inline-block; margin: 5px;">
                     <li style="margin: 5px;"><a href="http://localhost:8000/"></i>Dashboard</a></li>
-                    <li class="active" style="margin: 5px;"><a href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
-                    <li style="margin: 5px;"><a href="#">Comment</a></li>
-                    <li style="margin: 5px;"><a href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
-                    <li style="margin: 5px;"><a href="{% url 'video' ids=parsing.ids %}">Video</a></li> 
+                    <li style="margin: 5px;"><a id="anlaysis-view" href="{% url 'analysis' ids=parsing.ids %}">Analysis</a></li>
+                    <li class="active" style="margin: 5px;"><a href="#">Comment</a></li>
+                    <li style="margin: 5px;"><a id="gallery-view" href="{% url 'gallery' ids=parsing.ids %}">Gallery</a></li> 
+                    <li style="margin: 5px;"><a id="video-view" href="{% url 'video' ids=parsing.ids %}">Video</a></li>
                 </ul>
             </aside>
             <!-- END: SIDEBAR -->
             <section class="content">
-                    <div class="main-content">
-                        <div class="row">
+                <div class="main-content">
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="panel ">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title" style="text-align: center;">장소 태그 Top 10</h3>
+                                    <h3 class="panel-title" style="text-align: center;">Replies Word Embedding</h3>
                                 </div>
                                 <div class="panel-body">
-                                <!-- Text Emotion -->
-                                <!-- Love, Optimism, Anger, Remorse, Disapproval, Fear -->
+                                    <p style="text-align: center;">
+                                    {% for i in re_user_ret %}
+                                        <button class="btn btn-info btn-re" style="display: inline; margin:5px;" value="{{ forloop.counter }}">{{ i }}</button>
+                                    {% endfor %}
+                                    </p>
+                                    <canvas id="polar-chart-re" style="display: block;"></canvas>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="panel">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title" style="text-align: center;">Temp</h3>
+                                    <h3 class="panel-title" style="text-align: center;">User Word Embedding</h3>
                                 </div>
                                 <div class="panel-body"> 
                                     <!-- Word Embedding -->
                                     <!-- Topic Modeling -->
+                                    <p style="text-align: center;">
+                                    {% for i in user_ret %}
+                                        <button class="btn btn-info btn-user" style="display: inline; margin:5px;" value="{{ forloop.counter }}">{{ i }}</button>
+                                    {% endfor %}
+                                    </p>
+                                    <canvas id="polar-chart" style="display: block;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="panel">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title" style="text-align: center;">Temp</h3>
+                                    </div>
+                                    <div class="panel-body"> 
+                                         <!-- Text Emotion -->
+                                        <!-- A-Pos, Pos, Nor, Neg, A-Neg -->
+                                    </div>
                                 </div>
                             </div>
                         </div>

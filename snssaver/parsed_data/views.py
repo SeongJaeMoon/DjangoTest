@@ -5,7 +5,7 @@ from django.template import loader
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from analysis import times_hours_key, times_hours_val, times_value, times_date, word_embedding
+from analysis import times_hours_key, times_hours_val, times_value, times_date, get_model
 import json
 # Class View 변경 필요
 
@@ -113,21 +113,36 @@ def video(request, ids):
 def comment(request, ids):
     auto_id = [u.ids for u in ParsingData.objects.all()]
     parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
-    result = []
-    for up in UploadData.objects.filter(user = parsing).order_by('-created_at'):
-        for i in Comment.objects.filter(comm = up).order_by('-created_at'):
-            result.append(i)
+    
+    user_ret = []
+    data_key = []
+    data_val = []
 
-    page = request.GET.get('page', 1)
-    paginator = Paginator(result, 150)
-    try:
-        comments = paginator.page(page)
-    except PageNotAnInteger:
-        comments = paginator.page(1)
-    except EmptyPage:
-        comments = paginator.page(paginator.num_pages)
+    for r in get_model(ids, file_name=''):
+        user_ret.append(r[0])
+        for v in r[1]:
+            data_key.append(str(v[0]).replace('"', '').replace("'", ''))
+            data_val.append(v[1])
+
+    re_user_ret = []
+    re_data_key = []
+    re_data_val = []
+
+    for r in get_model(ids, file_name='re_'):
+        re_user_ret.append(r[0])
+        for v in r[1]:
+            re_data_key.append(str(v[0]).replace('"', '').replace("'", ''))
+            re_data_val.append(v[1])
 
     return render(request, 'parsed_data/comment.html', {'parsing': parsing,
-                                                        'comments':comments,
-                                                        'users':auto_id,
-                                                        'length':len(result)})
+                                                        'user_ret':user_ret,
+                                                        'data_key':data_key,
+                                                        'data_val':data_val,
+                                                        're_user_ret':re_user_ret,
+                                                        're_data_key':re_data_key,
+                                                        're_data_val':re_data_val,
+                                                        'users':auto_id})
+
+# Chatbot
+def chatbot(request):
+    return render(request, 'parsed_data/chatbot.html')

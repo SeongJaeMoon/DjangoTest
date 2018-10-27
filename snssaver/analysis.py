@@ -12,6 +12,9 @@ import codecs
 import numpy as np 
 import pandas as pd
 import dateutil.parser
+from bayesian import BayesianFilter
+from pprint import pprint
+
 # Python이 실행될 때 DJANGO_SETTINGS_MODULE이라는 환경 변수에 현재 프로젝트의 settings.py 파일 경로를 등록
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "snssaver.settings")
 # 장고를 가져와 장고 프로젝트를 사용할 수 있도록 환경을 만들기
@@ -237,8 +240,15 @@ def word_embedding(keyword, init=True): # 코멘트 Word Embedding
      
     save_model(keyword, ret1, init, file_name='') # 사용자 모델 저장
     save_model(keyword, ret2, init, file_name='re_') # 댓글 모델 저장
-
-    WordStatistic.objects.create(ids=keyword, user_words=query1, com_words=query2) # DB 저장
+    
+    if init:
+        WordStatistic.objects.create(ids=keyword, user_words=query1, com_words=query2) # DB 저장
+    else:
+        # DB 업데이트
+        ws = WordStatistic.objects.get(ids=keyword)
+        ws.user_words = query1  
+        ws.com_words = query2
+        ws.save()
 
 '''
 t: 말뭉치
@@ -269,6 +279,7 @@ result: 전처리 데이터
 init: 트레이닝 데이터 업데이트 여부
 file_name: 사용자 전용 코멘트 <-> 댓글 구분 파일 이름
 '''
+# Word Embedding - Save Model
 def save_model(keyword, result, init = False, file_name=''): # 모델 저장
     temp_file = FACTORY + file_name + keyword+'.wakati' # LineSentence로 읽어들일 데이터 저장
     model_file = FACTORY + file_name + keyword+'.model' # 실제 학습에 사용되는 모델 파일 
@@ -281,13 +292,20 @@ def save_model(keyword, result, init = False, file_name=''): # 모델 저장
         model.save(model_file)
         print('init done')
     else:
+        with open(temp_file, 'w', encoding='utf-8') as fp:
+            fp.write('\n'.join(result))
+        data = word2vec.LineSentence(temp_file)
+        model = word2vec.Word2Vec.load(model_file)
+        model.update_vocab(data)
+        model.train(data)
+        model.save(model_file)
         # 모델 트레이닝 업데이트
         print('update done')
 
     print(temp_file, ' size: ', os.path.getsize(temp_file)/1024, 'kb')
     print(model_file, ' size: ', os.path.getsize(model_file)/1024, 'kb')
 
-
+# Word Embedding - Get Model
 def get_model(keyword, file_name=''):
     words = WordStatistic.objects.get(ids=keyword)
     model_file = FACTORY + file_name + keyword+'.model' # 실제 학습에 사용되는 모델 파일 
@@ -302,11 +320,55 @@ def get_model(keyword, file_name=''):
         print(e)
     return ret
 
+# 감성 분석을 위한 영화 리뷰 데이터 가져오기
+def read_data(filename):
+    with open(filename, 'r') as f:
+        data = [line.split('\t') for line in f.read().splitlines()]
+        data = data[1:]   # header 제외
+    return data
+# 코퍼스 분석 <-> 보류
+def get_corpus():
+    intensity_csv = pd.read_csv(FACTORY + 'lexicon/intensity.csv')
+    polarity_csv = pd.read_csv(FACTORY + 'lexicon/polarity.csv')
+    expressive_csv = pd.read_csv(FACTORY + 'lexicon/expressive-type.csv')
+    
+    intensity = intensity_csv[['ngram','freq','High','Low','Medium','None','max.value','max.prop']].values
+    polarity = polarity_csv[['ngram','freq','COMP','NEG','NEUT','None','max.value','max.prop']].values
+    expressive = expressive_csv[['ngram','freq','dir-action','dir-explicit',
+                                 'dir-speech','indirect','writing-device','max.value','max.prop']].values
+    
+# 베이지안 필터링
+def get_bayese(train_data):
+    bf = BayesianFilter()
+    # 텍스트 학습
+    # param : 콘텐츠, 결과
+    for t in train_data:
+        if t[2] == '1':
+            bf.fit(t[1], "pos") # 긍정
+        else:
+            bf.fit(t[1], "neg") # 부정     
+    
+    # 예측
+    # param 콘텐츠, 결과 -> Model 저장 필요
+    # 게시물 10개, 15개, 20개 and 시간 한 주, 한 달
+    for user in ParsingData.objects.all():
+        data = {'pos':0, 'neg':0} # 긍/부정 담을 딕셔너리
+        for up in UploadData.objects.filter(user=user).order_by('time'):
+            time = up.time # 게시 시간
+            for com in Comment.objects.filter(comm=up):
+                pre, score_list = bf.predict(str(com.comment))
+                if pre == 'pos':
+                    data['pos'] += 1
+                else:
+                    data['neg'] += 1
 
 if __name__ == "__main__":
     start_time = time.time()
     # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
-    auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
-    for i in auto_id:
-        word_embedding(i, init=True)
+    # auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
+    # for i in auto_id:
+    #     print(i)
+    #     word_embedding(i, init=False)
+    train_data = read_data(FACTORY + 'ratings_train.txt')
+    get_bayese(train_data)
     print("--- %s seconds ---" % (time.time() - start_time))

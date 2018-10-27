@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^analysis/(?P<ids>[a-zA-Z0-9._]+)/$', views.analysis, name="analysis"),
     url(r'^gallery/(?P<ids>[a-zA-Z0-9._]+)/$', views.gallery, name="gallery"),
     url(r'^video/(?P<ids>[a-zA-Z0-9._]+)/$', views.video, name="video"),
+    url(r'^chatbot/$', views.chatbot, name="chatbot"),
 ]

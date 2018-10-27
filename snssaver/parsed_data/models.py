@@ -95,7 +95,9 @@ class WordStatistic(models.Model):
     def __str__(self):
         return self.ids
 
-# Text Emotion 저장 모델
+# Bayesian 저장 모델
+class Bayesian(models.Model):
+    ids = models.TextField() # 유저 아이디
 
 # ImageProcessing 저장 모델
 
