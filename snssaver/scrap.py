@@ -275,7 +275,7 @@ if __name__ == "__main__":
         
         # # 주기적으로 Video 업데이트(48시간)
         # for i in auto_id:
-        #     update_video(i) # video DB Update
+            # update_video(i) # video DB Update
         
         # Data Update
         with Pool(processes = 4) as p:
@@ -287,7 +287,10 @@ if __name__ == "__main__":
             if i is not None:
                 if i[1]:
                     print('update-> ', i[0])
-                    analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)               
+                    analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)
+        # 긍 & 부정 업데이트
+        train_data = read_data(analysis.FACTORY + 'ratings_train.txt')
+        save_bayese(train_data)          
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

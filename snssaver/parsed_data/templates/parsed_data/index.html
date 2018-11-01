@@ -39,7 +39,6 @@
                 $(this).val('1'); // 값 변경
                 dtlabel = "시간에 따른 게시글";
             }
-            // console.log(temp);
             $.ajax({
                     type: "POST", // 데이터를 전송하는 방법을 지정
                     url: "/change_line/", // 통신할 url을 지정
@@ -85,7 +84,6 @@
         });
         $('#analysis-view').on('click', function(){
                 $('.spinner').show();
-                $('.spinner').show();
                 $('.body').css('opacity', '0.5');
         });
         $('.navbar-toggle').on('click', function(){
@@ -107,8 +105,7 @@
         });
     });    
     </script>
-</head>
-<body> 
+</head> 
 <body> 
     <div class="wrapper">
      <!-- HEAD NAV -->
@@ -144,24 +141,6 @@
                     <span class="sr-only" style="color:powderblue;">Toggle navigation</span>
                     <i class="fa fa-ellipsis-h"></i>
                 </a>
-            </li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">새로운 소식(<b>2</b>)</a>
-                <ul class="dropdown-menu notify-drop" style="position: absolute;">
-                    <!-- notify content -->
-                    <div class="drop-content">
-                        <li>
-                            <div class="col-md-5 col-sm-5 col-xs-5">
-                                <div class="notify-img">
-                                    <a href="#"><img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"></a>
-                                    <p>{{parsing.ids}}</p>     
-                                    <p class="time" style="margin-top: 15px;">30</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                    </div>
-                </ul>
             </li>          
         </ul>
     </div>

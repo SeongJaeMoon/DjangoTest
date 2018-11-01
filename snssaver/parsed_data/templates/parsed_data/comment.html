@@ -38,7 +38,6 @@
             });
             $('#analysis-view').on('click', function(){
                 $('.spinner').show();
-                $('.spinner').show();
                 $('.body').css('opacity', '0.5');
             });
             $('.comment-item').on('click', function(){
@@ -131,6 +130,14 @@
                     }
                 });
             }
+            $('.navbar-toggle').on('click', function(){
+                var isExpanded = $(this).attr('aria-expanded');
+                if (isExpanded == 'true'){
+                    $('.sidebar').hide();
+                }else{
+                    $('.sidebar').show();
+                }
+            });
         });
     </script>
     <script type="text/javascript">
@@ -173,25 +180,7 @@
                     <span class="sr-only" style="color:powderblue;">Toggle navigation</span>
                     <i class="fa fa-ellipsis-h"></i>
                 </a>
-            </li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">새로운 소식(<b>2</b>)</a>
-                <ul class="dropdown-menu notify-drop" style="position: absolute;">
-                    <!-- notify content -->
-                    <div class="drop-content">
-                        <li>
-                            <div class="col-md-5 col-sm-5 col-xs-5">
-                                <div class="notify-img">
-                                    <a href="#"><img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"></a>
-                                    <p>{{parsing.ids}}</p>     
-                                    <p class="time" style="margin-top: 15px;">30</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                    </div>
-                </ul>
-            </li>          
+            </li>     
         </ul>
     </div>
     <!-- END: HEAD NAV -->
@@ -247,11 +236,15 @@
                             <div class="col-md-12">
                                 <div class="panel">
                                     <div class="panel-heading">
-                                        <h3 class="panel-title" style="text-align: center;">Temp</h3>
+                                        <h3 class="panel-title" style="text-align: center;">긍정 &amp; 부정 도표</h3>
                                     </div>
                                     <div class="panel-body"> 
-                                         <!-- Text Emotion -->
-                                        <!-- A-Pos, Pos, Nor, Neg, A-Neg -->
+                                         <!-- Text Emotion Pos, Neg-->
+                                        <div class="graph">
+                                            <div class="graph-container">
+                                                <canvas id="bar-chart-grouped" width="1200" height="450"></canvas>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -263,5 +256,66 @@
         </div>
         <!-- END: BODY -->
     </div>
+    <script type="text/javascript">
+        var pos = "{{ positive|safe }}";
+        console.log(typeof(pos));
+        var neg = "{{ negative|safe }}";
+        var label = "{{ pn_times|safe }}";
+        pos = pos.replace('[', '').replace(']', '').split(',');
+        neg = neg.replace('[', '').replace(']', '').split(',');
+        label = label.replace('[', '').replace(']', '').split(',');
+        var p_len = pos.length;
+        var n_len = neg.length;
+        for(var i = 0; i < p_len; ++i){
+            pos[i] = parseInt(pos[i].replace("'",'').trim());
+        }
+        for(var i = 0; i < n_len; ++i){
+            neg[i] = parseInt(neg[i].replace("'",'').trim());
+        }
+        new Chart(document.getElementById("bar-chart-grouped"), {
+            type: 'bar',
+            data: {
+            labels: label,
+            datasets: [
+                {
+                label: "긍정",
+                backgroundColor: "#3e95cd",
+                data: pos
+                }, {
+                label: "부정",
+                backgroundColor: "#8e5ea2",
+                data: neg
+                }
+            ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: '게시물 댓글 긍정&부정'
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+                tooltips: {
+                    titleFontSize: 0,
+                    titleMarginBottom: 0,
+                    bodyFontSize: 12
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            fontSize: 12,
+                            display: true
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            fontSize: 12,
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
 </body>
 </html>

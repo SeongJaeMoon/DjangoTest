@@ -79,25 +79,7 @@
                     <span class="sr-only" style="color:powderblue;">Toggle navigation</span>
                     <i class="fa fa-ellipsis-h"></i>
                 </a>
-            </li>
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">새로운 소식(<b>2</b>)</a>
-                <ul class="dropdown-menu notify-drop" style="position: absolute;">
-                    <!-- notify content -->
-                    <div class="drop-content">
-                        <li>
-                            <div class="col-md-5 col-sm-5 col-xs-5">
-                                <div class="notify-img">
-                                    <a href="#"><img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"></a>
-                                    <p>{{parsing.ids}}</p>     
-                                    <p class="time" style="margin-top: 15px;">30</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                    </div>
-                </ul>
-            </li>          
+            </li>         
         </ul>
     </div>
     <!-- END: HEAD NAV -->
@@ -173,7 +155,7 @@
         </div>
         <!-- END: BODY -->
     </div>
-    <script type="text/javascript">
+    <!-- <script type="text/javascript">
         var places = "{{ places|get_places }}"
         var pvalues = "{{ places|get_places_value }}"
         places = places.replace('[','').replace(']','').replace("'",'').split(',');
@@ -182,11 +164,11 @@
         var newPlaces = [];
         var newPValues = [];
         for(var i = 0; i < len; ++i){
-            newPlaces.push(places[i].replace("'",''));
-            newPValues.push(parseInt(pvalues[i].replace("'",'')));
+            newPlaces.push(places[i].replace("'",'').trim());
+            newPValues.push(parseInt(pvalues[i].replace("'",'').trim()));
         }
         console.log(newPlaces, newPValues);
-    </script>
+    </script> -->
 
     <!-- <script type="text/javascript">
         var map;

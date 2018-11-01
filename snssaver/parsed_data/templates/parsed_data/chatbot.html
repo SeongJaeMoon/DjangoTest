@@ -21,45 +21,39 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js" type="text/javascript"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript">
     $(document).ready(function(){
-        $('#gallery-view').on('click', function(){
+       $('.chat-btn').on('click', function(){
+        var txt = $('#txt').val();
+        $('#txt').val('');
+        if (((typeof txt != "undefined") && (typeof txt.valueOf() == "string")) && (txt.length > 0)) {
+            $('.chat_wrap').append('<div class="usr">'+txt+' <span style="font-size: 15px; color: powderblue;">:나</span><div>')
             $('.spinner').show();
-            $('.body').css('opacity', '0.5');
-        });
-        $('#video-view').on('click', function(){
-            $('.spinner').show();
-            $('.body').css('opacity', '0.5');
-        });
-        $('#comment-view').on('click', function(){
-            $('.spinner').show();
-            $('.body').css('opacity', '0.5');
-        });
-        $('#analysis-view').on('click', function(){
-                $('.spinner').show();
-                $('.spinner').show();
-                $('.body').css('opacity', '0.5');
-        });
-        $('.navbar-toggle').on('click', function(){
-            var isExpanded = $(this).attr('aria-expanded');
-            if (isExpanded == 'true'){
-                $('.sidebar').hide();
-            }else{
-                $('.sidebar').show();
-            }
-        });
+            $.ajax({
+                type: "POST", // 데이터를 전송하는 방법을 지정
+                url: "/chatbot/make_reply/", // 통신할 url을 지정
+                data: {'txt': txt, 
+                       'csrfmiddlewaretoken': '{{ csrf_token }}'},    
+                    success: function(data){
+                        $('.spinner').hide();
+                        $('.chat_wrap').append('<div class="bot"><span style="font-size: 15px; color: powderblue;">봇:</span> '+data['ret']+'<div>')
+                    },
+                    dataType: 'json',
+                    error: function(request, status, error){
+                        $('.spinner').hide();
+                        alert(status +": "+ error);
+                    }
+              });
+        }else{
+            alert('입력 값이 없습니다!');
+        }   
+       });
+       $('.btn-reset').on('click',function(){
+           $('.chat_wrap').find('div.usr').remove();
+           $('.chat_wrap').find('div.bot').remove();
+       });
     });
-    </script>
-    <script type="text/javascript">
-    $( function() {
-        var users = "{{ users|get_users }}";
-        users = users.split(',')
-        $("#auto-id").autocomplete({
-            source: users
-        });
-    });    
     </script>
 </head>
 <body> 
@@ -67,29 +61,8 @@
     <div class="wrapper">
      <!-- HEAD NAV -->
     <div class="navbar navbar-default navbar-static-top navbar-main" role="navigation">
-        <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
-            <input type="hidden" name='csrfmiddlewaretoken' value="{{ csrf_token }}">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">id</span>
-                </div>
-                <input name="ids" type="text" class="form-control" id="auto-id" placeholder="아이디 검색" value="">
-                <button class="btn btn-info" type="submit">검색</button>
-            </div>    
-        </form>
-        {% if is_none == 0 %}
-            <div class="alert alert-danger alert-dismissible" style="display:inline-block; padding-top:5px; padding-bottom:5px; margin:0px;">  
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a> <strong style="color: indigo;">Fail!</strong> 요청한 작업 처리가 실패했습니다. 
-            </div>
-        {% endif %}
         <div class="navbar-header">
-            <div class="spinner" style="display: none;">
-                <div class="rect1"></div>
-                <div class="rect2"></div>
-                <div class="rect3"></div>
-                <div class="rect4"></div>
-                <div class="rect5"></div>
-            </div>
+            <strong>ChatBot 대화하기</strong> <button class="btn btn-danger btn-reset" style="display: inline;">채팅 모두 지우기</button>
         </div>
         <ul class="nav navbar-nav navbar-right">
              <li class="visible-xs">
@@ -107,11 +80,23 @@
             <aside class="sidebar collapse navbar-collapse">
                 <ul class="nav nav-stacked" style="display:inline-block; margin: 5px;">
                     <li style="margin: 5px;"><a href="http://localhost:8000/">Dashboard</a></li>
-                    <li class="active" style="margin: 5px;"><a id="chatbot-view" href="#">Chatbot</a></li> 
+                    <li class="active" style="margin: 5px;"><a href="#">Chatbot</a></li> 
                 </ul>
             </aside>
             <!-- END: SIDEBAR -->
             <section class="content">
+                <!-- START: CONTENT -->
+                <div class = "chat_wrap">
+                    <div class="spinner" style="display: none;">
+                        <div class="rect1"></div>
+                        <div class="rect2"></div>
+                        <div class="rect3"></div>
+                        <div class="rect4"></div>
+                        <div class="rect5"></div>
+                    </div>
+                </div>
+                <input id="txt" class="form-control" type="text" name="txt" placeholder="입력하세요.">
+                <button class="btn btn-outline-info btn-block chat-btn" style="margin-bottom: 10px;">전송</button>
                 <!-- END: CONTENT -->
             </section>
         </div>

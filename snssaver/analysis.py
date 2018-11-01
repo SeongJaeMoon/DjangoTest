@@ -14,14 +14,16 @@ import pandas as pd
 import dateutil.parser
 from bayesian import BayesianFilter
 from pprint import pprint
-
+from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
 # Python이 실행될 때 DJANGO_SETTINGS_MODULE이라는 환경 변수에 현재 프로젝트의 settings.py 파일 경로를 등록
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "snssaver.settings")
 # 장고를 가져와 장고 프로젝트를 사용할 수 있도록 환경을 만들기
 import django
 django.setup()
 from multiprocessing import cpu_count
-from parsed_data.models import ParsingData, UploadData, ImgData, VideoData, Comment, BasicStatistic, WordStatistic 
+from parsed_data.models import ParsingData, UploadData, ImgData, VideoData, Comment, BasicStatistic, WordStatistic, Bayesian 
 
 FACTORY = '/Users/moonseongjae/Project_sns/factory/'
 
@@ -219,6 +221,23 @@ def get_places_value(data):
     values = [str(d).replace('),','') for d in re.findall('\d*\),', data)]    
     return values[:10] # 값 1~10
 
+def get_geocoding(ids):
+    statistic = BasicStatistic.objects.get(ids=ids)
+    keys = get_places(statistic.place)
+    values = get_places_value(statistic.place)
+    print(keys)
+    print(values)
+    if keys is not None and keys != "":
+        for k in keys:
+            request = requests.get("https://maps.googleapis.com/maps/api/geocode/json?address="+k+"&key=AIzaSyDa1-OAbKJx0mf-kq2DN3tQArOfj2o36GE")
+            code = request.status_code
+            if code == 200:
+                print(request.text)
+            else:
+                print('error code: ', code)
+
+def save_geocoding(ids, ret):
+    return None
 ''' 
 keyword: User ID
 init: 초기화 여부
@@ -326,6 +345,7 @@ def read_data(filename):
         data = [line.split('\t') for line in f.read().splitlines()]
         data = data[1:]   # header 제외
     return data
+
 # 코퍼스 분석 <-> 보류
 def get_corpus():
     intensity_csv = pd.read_csv(FACTORY + 'lexicon/intensity.csv')
@@ -338,29 +358,47 @@ def get_corpus():
                                  'dir-speech','indirect','writing-device','max.value','max.prop']].values
     
 # 베이지안 필터링
-def get_bayese(train_data):
-    bf = BayesianFilter()
-    # 텍스트 학습
-    # param : 콘텐츠, 결과
-    for t in train_data:
-        if t[2] == '1':
-            bf.fit(t[1], "pos") # 긍정
-        else:
-            bf.fit(t[1], "neg") # 부정     
-    
-    # 예측
-    # param 콘텐츠, 결과 -> Model 저장 필요
-    # 게시물 10개, 15개, 20개 and 시간 한 주, 한 달
-    for user in ParsingData.objects.all():
-        data = {'pos':0, 'neg':0} # 긍/부정 담을 딕셔너리
-        for up in UploadData.objects.filter(user=user).order_by('time'):
-            time = up.time # 게시 시간
-            for com in Comment.objects.filter(comm=up):
-                pre, score_list = bf.predict(str(com.comment))
-                if pre == 'pos':
-                    data['pos'] += 1
-                else:
-                    data['neg'] += 1
+def save_bayese(train_data):
+    try:
+        bf = BayesianFilter()
+        # 텍스트 학습, param : 콘텐츠, 결과
+        for t in train_data:
+            if t[2] == '1':
+                bf.fit(t[1], 'p') # 긍정
+            else:
+                bf.fit(t[1], 'n') # 부정     
+        
+        # 예측, param 콘텐츠, 결과 -> Model 저장 필요
+        for user in ParsingData.objects.all():
+            for up in UploadData.objects.filter(user=user).order_by('-time'):
+                try:
+                    ups = Bayesian.objects.get(blink=up) # 예외 발생시 -> Data가 없는 것!
+                except:
+                    ups = None
+                    pass
+                if ups is None:
+                    data = {'pos':0, 'neg':0} # 긍/부정 담을 딕셔너리
+                    for com in Comment.objects.filter(comm=up):
+                        pre, score_list = bf.predict(str(com.comment))
+                        if pre == 'p':
+                            data['pos'] += 1
+                        else:
+                            data['neg'] += 1
+                    Bayesian.objects.create(blink=up, data_list=data)
+                    print(user, ' create done')
+            print(user, ' done')
+    except Exception as e:
+        print(e)
+    finally:
+        print('bayesian done')
+
+def get_bayese(ids):
+    ret = []
+    for up in UploadData.objects.filter(user=ParsingData.objects.get(ids=ids)).order_by('time'):
+        time = datetime.strftime(dateutil.parser.parse(up.time), '%Y-%m-%d')
+        bs = Bayesian.objects.get(blink=up).data_list
+        ret.append([time, bs])
+    return ret
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -369,6 +407,7 @@ if __name__ == "__main__":
     # for i in auto_id:
     #     print(i)
     #     word_embedding(i, init=False)
-    train_data = read_data(FACTORY + 'ratings_train.txt')
-    get_bayese(train_data)
+    # train_data = read_data(FACTORY + 'ratings_train.txt')
+    # save_bayese(train_data)
+    get_geocoding()
     print("--- %s seconds ---" % (time.time() - start_time))

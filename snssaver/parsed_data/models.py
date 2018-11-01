@@ -1,11 +1,12 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, HStoreField
 from django.utils import timezone
 from django import forms
 from django.forms import ModelForm
 from django.forms import modelform_factory
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.contrib.postgres.fields import JSONField
 
 # 유저 정보
 class ParsingData(models.Model):
@@ -97,8 +98,30 @@ class WordStatistic(models.Model):
 
 # Bayesian 저장 모델
 class Bayesian(models.Model):
-    ids = models.TextField() # 유저 아이디
+    blink = models.ForeignKey(UploadData, on_delete = models.CASCADE) # 업로드 링크
+    data_list = HStoreField(blank=True, null=True)
 
+    def __str__(self):
+        return self.blink
+
+# ChatBot DB 저장 모델
+class ChatBotData(models.Model):
+    name = models.CharField(max_length=200)
+    chat_data = JSONField()
+
+    def __str__(self):
+        return self.name
+
+# Analysis 저장 모델
+class AnalysisStatistic(models.Model):
+    name = models.CharField(max_length=200)
+    img_data = JSONField()
+    video_data = JSONField()
+    map_data = JSONField()
+
+    def __str__(self):
+        return self.name
+        
 # ImageProcessing 저장 모델
 
 
