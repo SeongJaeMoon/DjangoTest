@@ -100,7 +100,6 @@ def make_sentence(head, dic):
     #         ret = replace_text.get_text()    
     # else:
     #     print('error: ', code)
-    print(ret)
     # 리턴
     return ret
 

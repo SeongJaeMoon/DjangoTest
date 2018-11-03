@@ -70,31 +70,11 @@
         });
         });
     </script>
-    <script type="text/javascript">
-        $( function() {
-            var users = "{{ users|get_users }}";
-            users = users.split(',')
-            $("#auto-id" ).autocomplete({
-                source: users
-            });
-        });    
-    </script>
 </head>
 <body>
     <div class="wrapper">
      <!-- HEAD NAV -->
     <div class="navbar navbar-default navbar-static-top navbar-main" role="navigation">
-            <!-- Gallery Search는 따로 만들기 -->
-        <form class="form-inline" method="POST" action="http://localhost:8000/search_user/">
-            <input type="hidden" name='csrfmiddlewaretoken' value="{{ csrf_token }}">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">id</span>
-                </div>
-                <input name="ids" type="text" class="form-control" id="auto-id" placeholder="아이디 검색" value="">
-                <button class="btn btn-info" type="submit">검색</button>
-            </div>    
-        </form>
         <button id="play-all" class="btn btn-primary">일괄 재생</button>
         <div class="navbar-header">
             <a class="navbar-brand" href="https://www.instagram.com/{{ parsing.ids }}" target="_blank">{{parsing.ids}} <img src="{{parsing.profile_img}}" alt="{{parsing.ids}}" class="img-avatar pull-left"/></a>

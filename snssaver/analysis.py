@@ -1,5 +1,5 @@
 import re
-from collections import Counter
+from collections import Counter, OrderedDict
 from datetime import datetime
 from konlpy.tag import Okt
 from gensim import models, corpora
@@ -13,10 +13,10 @@ import numpy as np
 import pandas as pd
 import dateutil.parser
 from bayesian import BayesianFilter
-from pprint import pprint
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
+from firebase import Firebase
 # Python이 실행될 때 DJANGO_SETTINGS_MODULE이라는 환경 변수에 현재 프로젝트의 settings.py 파일 경로를 등록
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "snssaver.settings")
 # 장고를 가져와 장고 프로젝트를 사용할 수 있도록 환경을 만들기
@@ -113,8 +113,7 @@ def get_rank(user_id, defualt = 'tw.momoring'):
     result['reply_user'] = len(users) # 댓글 단 사용자 
     return result
 
-# [[{월:값, 월:값, ...}, {시간:값, 시간:값, ...}]]
-# 2018-10-05 11:26:25+00:00
+# [[{월:값, 월:값, ...}, {시간:값, 시간:값, ...}]], e.g., 2018-10-05 11:26:25+00:00.
 def get_time(time_list):
     result = []
     days = {}
@@ -210,39 +209,9 @@ def times_hours_val(data):
     key_value = re.findall('\d+', data)
     val = [int(key_value[k]) for k in range(1, len(key_value), 2)]
     return val
-
-# 사용자가 자주 태그한 장소 Top10 장소 반환
-def get_places(data):
-    keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", data)]    
-    return keys[:10] # 장소 1~10
-
-# 사용자가 자주 태그한 장소 Top10 값 반환
-def get_places_value(data):
-    values = [str(d).replace('),','') for d in re.findall('\d*\),', data)]    
-    return values[:10] # 값 1~10
-
-def get_geocoding(ids):
-    statistic = BasicStatistic.objects.get(ids=ids)
-    keys = get_places(statistic.place)
-    values = get_places_value(statistic.place)
-    print(keys)
-    print(values)
-    if keys is not None and keys != "":
-        for k in keys:
-            request = requests.get("https://maps.googleapis.com/maps/api/geocode/json?address="+k+"&key=AIzaSyDa1-OAbKJx0mf-kq2DN3tQArOfj2o36GE")
-            code = request.status_code
-            if code == 200:
-                print(request.text)
-            else:
-                print('error code: ', code)
-
-def save_geocoding(ids, ret):
-    return None
-''' 
-keyword: User ID
-init: 초기화 여부
-'''
-def word_embedding(keyword, init=True): # 코멘트 Word Embedding 
+ 
+# 코멘트 Word Embedding, keyword: User ID, init: 초기화 여부
+def word_embedding(keyword, init=True):  
     t = Okt() # 말뭉치 분석용 선언
     uid = ParsingData.objects.get(ids=keyword) # id 가져오기
     upload = UploadData.objects.filter(user=uid) # upload 정보 가져오기
@@ -269,10 +238,7 @@ def word_embedding(keyword, init=True): # 코멘트 Word Embedding
         ws.com_words = query2
         ws.save()
 
-'''
-t: 말뭉치
-content: 데이터
-'''
+# t: 말뭉치, content: 데이터
 def get_query(t, content):
     result = []
     queries = {} # 코멘트 내용 중 많이 나온 단어를 계산할 딕셔너리 선언
@@ -292,12 +258,7 @@ def get_query(t, content):
     
     return result, [q[0] for q in queries[:5]]
 
-'''
-keyword: User ID
-result: 전처리 데이터
-init: 트레이닝 데이터 업데이트 여부
-file_name: 사용자 전용 코멘트 <-> 댓글 구분 파일 이름
-'''
+# keyword: User ID, result: 전처리 데이터, init: 트레이닝 데이터 업데이트 여부, file_name: 사용자 전용 코멘트 <-> 댓글 구분 파일 이름
 # Word Embedding - Save Model
 def save_model(keyword, result, init = False, file_name=''): # 모델 저장
     temp_file = FACTORY + file_name + keyword+'.wakati' # LineSentence로 읽어들일 데이터 저장
@@ -345,19 +306,8 @@ def read_data(filename):
         data = [line.split('\t') for line in f.read().splitlines()]
         data = data[1:]   # header 제외
     return data
-
-# 코퍼스 분석 <-> 보류
-def get_corpus():
-    intensity_csv = pd.read_csv(FACTORY + 'lexicon/intensity.csv')
-    polarity_csv = pd.read_csv(FACTORY + 'lexicon/polarity.csv')
-    expressive_csv = pd.read_csv(FACTORY + 'lexicon/expressive-type.csv')
     
-    intensity = intensity_csv[['ngram','freq','High','Low','Medium','None','max.value','max.prop']].values
-    polarity = polarity_csv[['ngram','freq','COMP','NEG','NEUT','None','max.value','max.prop']].values
-    expressive = expressive_csv[['ngram','freq','dir-action','dir-explicit',
-                                 'dir-speech','indirect','writing-device','max.value','max.prop']].values
-    
-# 베이지안 필터링
+# 베이지안 필터링 데이터 저장
 def save_bayese(train_data):
     try:
         bf = BayesianFilter()
@@ -392,6 +342,7 @@ def save_bayese(train_data):
     finally:
         print('bayesian done')
 
+# 베이지안 필터링 데이터 가져오기
 def get_bayese(ids):
     ret = []
     for up in UploadData.objects.filter(user=ParsingData.objects.get(ids=ids)).order_by('time'):
@@ -400,6 +351,24 @@ def get_bayese(ids):
         ret.append([time, bs])
     return ret
 
+# def test_json(ids):
+#     dic = {}
+#     with open("test.json", 'r') as fp:
+#         dic = json.load(fp)
+#     # Initialize Firebase
+#     config = {
+#         "apiKey": "AIzaSyBa8bOUanX_snqF_KKI2VAhhRO_VjDS8Rk",
+#         "authDomain": "ihttps://intercepted-84b0b.firebaseio.com",
+#         "databaseURL": "https://intercepted-84b0b.firebaseio.com",
+#         "storageBucket": "intercepted-84b0b.appspot.com",
+#     }
+#     firebase = pyrebase.initialize_app(config)
+#     db = firebase.database()    
+#     # db.child(dic['id']).push(dic)
+#     data = db.child(dic['id']).get()
+#     print(data.val())
+#     print('done')
+
 if __name__ == "__main__":
     start_time = time.time()
     # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
@@ -407,7 +376,9 @@ if __name__ == "__main__":
     # for i in auto_id:
     #     print(i)
     #     word_embedding(i, init=False)
-    # train_data = read_data(FACTORY + 'ratings_train.txt')
-    # save_bayese(train_data)
-    get_geocoding()
+    # stat_list = [stat.place for stat in BasicStatistic.objects.all()]
+    # id_list = [str(ids).strip() for ids in ParsingData.objects.all()]
+    fb = Firebase()
+    # fb.save_geocoding(stat_list, id_list)
+    fb.get_geocoding("s.amnani")
     print("--- %s seconds ---" % (time.time() - start_time))

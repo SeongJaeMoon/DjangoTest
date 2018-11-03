@@ -59,10 +59,9 @@ def change_line(request):
 def analysis(request, ids):
     auto_id = [u.ids for u in ParsingData.objects.all()] # 전체 유저 정보
     parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
-    statistic = BasicStatistic.objects.get(ids=ids)
+    
     return render(request, 'parsed_data/analysis.html', {'users':auto_id,
-                                                         'parsing':parsing,
-                                                         'places':statistic.place})
+                                                         'parsing':parsing})
 
 # Gallery
 def gallery(request, ids):
@@ -151,9 +150,9 @@ def comment(request, ids):
                                                         'negative':negative,
                                                         'users':auto_id})
 
-@require_POST # 해당 뷰는 POST method 만 받는다.
+
 def make_reply(request):
-    txt = request.POST.get('txt', None)
+    txt = request.GET.get('txt', None)
     chatdata = get_object_or_404(ChatBotData, name="data01")
     ret = make_replies(txt, chatdata.chat_data)
     data = {'ret': ret}

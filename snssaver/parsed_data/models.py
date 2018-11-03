@@ -115,13 +115,13 @@ class ChatBotData(models.Model):
 # Analysis 저장 모델
 class AnalysisStatistic(models.Model):
     name = models.CharField(max_length=200)
-    img_data = JSONField()
-    video_data = JSONField()
-    map_data = JSONField()
+    img_data = JSONField(blank=True, null=True)
+    video_data = JSONField(blank=True, null=True)
+    map_data = JSONField(blank=True, null=True)
 
     def __str__(self):
         return self.name
-        
+
 # ImageProcessing 저장 모델
 
 

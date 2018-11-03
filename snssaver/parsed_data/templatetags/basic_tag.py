@@ -66,21 +66,11 @@ def get_users(data): # 사용자 정보
     result = str(data).replace('[','').replace(']','').replace("'",'')
     return mark_safe(result)
 
-@register.filter 
-def get_places(data): # 사용자가 자주 태그한 장소 Top10 장소 반환
-    keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[0-9a-zA-Z가-힣\!@#$%^&\* ]+',", data)]
-    return mark_safe(keys[:10])
-
 @register.filter
-def get_places_value(data): # 사용자가 자주 태그한 장소 Top10 값 반환
-    values = [str(d).replace('),','').strip() for d in re.findall('\d*\),', data)]    
-    return mark_safe(values[:10])
-
-@register.filter
-def get_images(data):
+def get_images(data): # 이미지 정보
     result = ''
     for d in data:
         time = str(dateutil.parser.parse(d[1]))
-        result += '<a href="#myModal" class="action" data-toggle="modal"><img alt='+ time +' src='+ d[0] +' style="width: 300px; height:300px;"></a>'
+        result += '<p style="text-align: center;"><a href="#myModal" class="action" data-toggle="modal"><img alt='+ time +' src='+ d[0] +' style="width: 500px; height:500px;"></a></p>'
     return mark_safe(result)
 

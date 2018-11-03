@@ -14,9 +14,6 @@
     <!-- style -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
-    <!-- chart -->
-    <link href="http://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.0/css/jquery.dataTables.min.css" rel="stylesheet" 
-    type="text/css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
@@ -31,7 +28,7 @@
             $('.chat_wrap').append('<div class="usr">'+txt+' <span style="font-size: 15px; color: powderblue;">:나</span><div>')
             $('.spinner').show();
             $.ajax({
-                type: "POST", // 데이터를 전송하는 방법을 지정
+                type: "GET", // 데이터를 전송하는 방법을 지정
                 url: "/chatbot/make_reply/", // 통신할 url을 지정
                 data: {'txt': txt, 
                        'csrfmiddlewaretoken': '{{ csrf_token }}'},    
