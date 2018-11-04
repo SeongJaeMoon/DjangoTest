@@ -351,34 +351,14 @@ def get_bayese(ids):
         ret.append([time, bs])
     return ret
 
-# def test_json(ids):
-#     dic = {}
-#     with open("test.json", 'r') as fp:
-#         dic = json.load(fp)
-#     # Initialize Firebase
-#     config = {
-#         "apiKey": "AIzaSyBa8bOUanX_snqF_KKI2VAhhRO_VjDS8Rk",
-#         "authDomain": "ihttps://intercepted-84b0b.firebaseio.com",
-#         "databaseURL": "https://intercepted-84b0b.firebaseio.com",
-#         "storageBucket": "intercepted-84b0b.appspot.com",
-#     }
-#     firebase = pyrebase.initialize_app(config)
-#     db = firebase.database()    
-#     # db.child(dic['id']).push(dic)
-#     data = db.child(dic['id']).get()
-#     print(data.val())
-#     print('done')
-
 if __name__ == "__main__":
     start_time = time.time()
     # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
-    # auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
-    # for i in auto_id:
-    #     print(i)
-    #     word_embedding(i, init=False)
-    # stat_list = [stat.place for stat in BasicStatistic.objects.all()]
-    # id_list = [str(ids).strip() for ids in ParsingData.objects.all()]
-    fb = Firebase()
-    # fb.save_geocoding(stat_list, id_list)
-    fb.get_geocoding("s.amnani")
+    auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
+    for i in auto_id:
+        print(i)
+        word_embedding(i, init=False)
+
+    stat_list = [stat.place for stat in BasicStatistic.objects.all()]
+    fb.save_geocoding(stat_list, auto_id)
     print("--- %s seconds ---" % (time.time() - start_time))

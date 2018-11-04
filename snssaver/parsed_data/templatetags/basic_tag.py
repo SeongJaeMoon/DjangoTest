@@ -71,6 +71,6 @@ def get_images(data): # 이미지 정보
     result = ''
     for d in data:
         time = str(dateutil.parser.parse(d[1]))
-        result += '<p style="text-align: center;"><a href="#myModal" class="action" data-toggle="modal"><img alt='+ time +' src='+ d[0] +' style="width: 500px; height:500px;"></a></p>'
+        result += '<a href="#myModal" class="action" data-toggle="modal"><img alt='+ time +' src='+ d[0] +' style="width: 600px; height:700px;"></a>'
     return mark_safe(result)
 

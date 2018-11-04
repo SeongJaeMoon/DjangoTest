@@ -274,23 +274,24 @@ if __name__ == "__main__":
         is_update = [True for i in range(len(auto_id))] # Update 여부
         
         # # 주기적으로 Video 업데이트(48시간)
-        for i in auto_id:
-            update_video(i) # video DB Update
+        # for i in auto_id:
+            # update_video(i) # video DB Update
         
-        # # Data Update
-        # with Pool(processes = 4) as p:
-        #     is_new_data = p.starmap(instagram, zip(auto_id, is_update))
-        #     print(is_new_data)
+        # Data Update
+        with Pool(processes = 4) as p:
+            is_new_data = p.starmap(instagram, zip(auto_id, is_update))
+            print(is_new_data)
         
-        # # BasicStatistic Update
-        # for i in is_new_data:
-        #     if i is not None:
-        #         if i[1]:
-        #             print('update-> ', i[0])
-        #             analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)
-        # # 긍 & 부정 업데이트
-        # train_data = read_data(analysis.FACTORY + 'ratings_train.txt')
-        # save_bayese(train_data)          
+        # BasicStatistic Update
+        for i in is_new_data:
+            if i is not None:
+                if i[1]:
+                    print('update-> ', i[0])
+                    analysis.save_rank(analysis.get_rank(user_id = str(i[0])), is_update = True)
+
+        # 긍 & 부정 업데이트
+        train_data = analysis.read_data(analysis.FACTORY + 'ratings_train.txt')
+        analysis.save_bayese(train_data)          
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

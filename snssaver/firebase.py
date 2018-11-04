@@ -8,7 +8,10 @@ class Firebase():
     def __init__(self):
          # Initialize Firebase
         config = {
-            
+            "apiKey": "AIzaSyBa8bOUanX_snqF_KKI2VAhhRO_VjDS8Rk",
+            "authDomain": "intercepted-84b0b.firebaseapp.com",
+            "databaseURL": "https://intercepted-84b0b.firebaseio.com/",
+            "storageBucket": "intercepted-84b0b.appspot.com",
         }
         app = pyrebase.initialize_app(config)
         self.db = app.database()
@@ -42,7 +45,7 @@ class Firebase():
                 ret = '{"id": "'+ids+'", "total": ['
                 for idx, k in enumerate(keys):
                     try:
-                        request = requests.get("https://maps.googleapis.com/maps/api/geocode/json?address="+k+"&key=")
+                        request = requests.get("https://maps.googleapis.com/maps/api/geocode/json?address="+k+"&key=AIzaSyDa1-OAbKJx0mf-kq2DN3tQArOfj2o36GE")
                         code = request.status_code
                         if code == 200:
                             if idx == len(keys) - 1:
