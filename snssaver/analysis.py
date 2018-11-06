@@ -211,7 +211,7 @@ def times_hours_val(data):
     return val
  
 # 코멘트 Word Embedding, keyword: User ID, init: 초기화 여부
-def word_embedding(keyword, init=True):  
+def word_embedding(keyword):  
     t = Okt() # 말뭉치 분석용 선언
     uid = ParsingData.objects.get(ids=keyword) # id 가져오기
     upload = UploadData.objects.filter(user=uid) # upload 정보 가져오기
@@ -226,17 +226,8 @@ def word_embedding(keyword, init=True):
     ret1, query1 = get_query(t, [str(up.content).replace("'"+ keyword +"',", '').replace(' ', '') for up in upload]) # 사용자 정보
     ret2, query2 = get_query(t, com_content) # 댓글 
      
-    save_model(keyword, ret1, init, file_name='') # 사용자 모델 저장
-    save_model(keyword, ret2, init, file_name='re_') # 댓글 모델 저장
-    
-    if init:
-        WordStatistic.objects.create(ids=keyword, user_words=query1, com_words=query2) # DB 저장
-    else:
-        # DB 업데이트
-        ws = WordStatistic.objects.get(ids=keyword)
-        ws.user_words = query1  
-        ws.com_words = query2
-        ws.save()
+    save_model(keyword, ret1, file_name='') # 사용자 모델 저장
+    save_model(keyword, ret2, file_name='re_') # 댓글 모델 저장
 
 # t: 말뭉치, content: 데이터
 def get_query(t, content):
@@ -258,20 +249,24 @@ def get_query(t, content):
     
     return result, [q[0] for q in queries[:5]]
 
-# keyword: User ID, result: 전처리 데이터, init: 트레이닝 데이터 업데이트 여부, file_name: 사용자 전용 코멘트 <-> 댓글 구분 파일 이름
+# keyword: User ID, result: 전처리 데이터,  file_name: 사용자 전용 코멘트 <-> 댓글 구분 파일 이름
 # Word Embedding - Save Model
-def save_model(keyword, result, init = False, file_name=''): # 모델 저장
+def save_model(keyword, result, file_name=''): # 모델 저장
     temp_file = FACTORY + file_name + keyword+'.wakati' # LineSentence로 읽어들일 데이터 저장
     model_file = FACTORY + file_name + keyword+'.model' # 실제 학습에 사용되는 모델 파일 
     
-    if init: # 모델 초기화(저장)
+    if not os.path.exists(temp_file):
+     # 모델 초기화(저장)
         with open(temp_file, 'w', encoding='utf-8') as fp:
             fp.write('\n'.join(result))
         data = word2vec.LineSentence(temp_file)
         model = word2vec.Word2Vec(data, size=200, window=10, workers=cpu_count(), min_count=2, iter=100, sg=1)
         model.save(model_file)
+
+        WordStatistic.objects.create(ids=keyword, user_words=query1, com_words=query2) # DB 저장
         print('init done')
     else:
+        # 모델 트레이닝 업데이트
         with open(temp_file, 'w', encoding='utf-8') as fp:
             fp.write('\n'.join(result))
         data = word2vec.LineSentence(temp_file)
@@ -279,11 +274,15 @@ def save_model(keyword, result, init = False, file_name=''): # 모델 저장
         model.update_vocab(data)
         model.train(data)
         model.save(model_file)
-        # 모델 트레이닝 업데이트
+        # DB 업데이트
+        ws = WordStatistic.objects.get(ids=keyword)
+        ws.user_words = query1  
+        ws.com_words = query2
+        ws.save()
         print('update done')
 
     print(temp_file, ' size: ', os.path.getsize(temp_file)/1024, 'kb')
-    print(model_file, ' size: ', os.path.getsize(model_file)/1024, 'kb')
+    print(model_file, ' size: ', os.path.getsize(model_file)/1024, 'kb')        
 
 # Word Embedding - Get Model
 def get_model(keyword, file_name=''):
@@ -357,8 +356,8 @@ if __name__ == "__main__":
     auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
     for i in auto_id:
         print(i)
-        word_embedding(i, init=False)
+        word_embedding(i)
 
-    stat_list = [stat.place for stat in BasicStatistic.objects.all()]
-    fb.save_geocoding(stat_list, auto_id)
+    # stat_list = [stat.place for stat in BasicStatistic.objects.all()]
+    # fb.save_geocoding(stat_list, auto_id)
     print("--- %s seconds ---" % (time.time() - start_time))

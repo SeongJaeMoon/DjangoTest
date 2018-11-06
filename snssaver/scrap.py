@@ -73,8 +73,6 @@ def instagram(keyword: "user id", is_update = True):
             
             if not new_links:
                 return keyword, False # 바로 return (사용자 아이디, 변경 사항 없음)
-            # if not (total_len > save_total): # Update이면서, 새로운 게시물이 없다면 
-            #     return keyword, False # 바로 return (사용자 아이디, 변경 사항 없음)
         else:         
             new_links = []
             break_point = 0
@@ -114,14 +112,12 @@ def instagram(keyword: "user id", is_update = True):
                 pass
             try:
                 user_reply = [] 
-                isMore = True            
-                while isMore:
+                while True:
                     try:
                         more_btn = driver.find_element_by_class_name('Z4IfV') # 댓글 더보기 버튼 클릭
                         more_btn.click()
                         time.sleep(1)
-                    except Exception as e: 
-                        isMore = False
+                    except: 
                         break
                 li = driver.find_elements_by_class_name('C4VMK')
                 user_reply = [[l.find_element_by_tag_name('a').text, l.find_element_by_tag_name('span').text] for l in li] # [[사용자, 글과 태그], [유저, 댓글], [유저, 댓글]]...   
@@ -136,8 +132,17 @@ def instagram(keyword: "user id", is_update = True):
             except:
                 pass
             try:
-                img = driver.find_elements_by_css_selector('div.KL4Bh > img')
-                imgs = [im.get_attribute('src') for im in img] # 게시물 사진
+                imgs = []
+                while True:
+                    try:
+                        for img in driver.find_elements_by_css_selector('div.KL4Bh > img'):
+                            if not (img.get_attribute('src') in imgs):
+                                imgs.append(img.get_attribute('src')) # 게시물 사진
+                        btn = driver.find_element_by_class_name('  _6CZji')
+                        btn.click()
+                        time.sleep(1)
+                    except:
+                        break
                 datas['imgs'] = imgs # [주소, 주소, ...]
             except:
                 pass
@@ -185,14 +190,14 @@ def save_db(data: "user data-list", is_update = False):
                 if d['imgs']:
                     for img in d['imgs']: 
                         ImgData.objects.create(list_img = upload, 
-                                            imgs = img)
+                                               imgs = img)
             except:
                 pass
             try:
                 if d['videos']:
                     for video in d['videos']:
                         VideoData.objects.create(list_video = upload, 
-                                                vidoes = video)
+                                                 vidoes = video)
             except:
                 pass
             try:
@@ -273,7 +278,7 @@ if __name__ == "__main__":
         auto_id = [str(u.ids).strip() for u in ParsingData.objects.all()] # 사용자 모음
         is_update = [True for i in range(len(auto_id))] # Update 여부
         
-        # # 주기적으로 Video 업데이트(48시간)
+        # 주기적으로 Video 업데이트(48시간)
         # for i in auto_id:
             # update_video(i) # video DB Update
         
@@ -291,7 +296,7 @@ if __name__ == "__main__":
 
         # 긍 & 부정 업데이트
         train_data = analysis.read_data(analysis.FACTORY + 'ratings_train.txt')
-        analysis.save_bayese(train_data)          
+        analysis.save_bayese(train_data)
     except Exception as e:
         print(e)
     print("--- %s seconds ---" % (time.time() - start_time))

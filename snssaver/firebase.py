@@ -27,14 +27,15 @@ class Firebase():
                         if v.get('id') == ids:
                             self.ret = v
                             break
-            if self.ret:
-                print(self.ret['id'])
-                for d in self.ret['total']:
-                    result = d['results'][0]
-                    print(result['formatted_address'])
-                    print(result['geometry']['location']['lat'], result['geometry']['location']['lng'])
-                    print(result['place_id'])
-                    print(str(result['types']).replace('[', '').replace(']','')) 
+        return self.ret
+            # if self.ret:
+                # print(self.ret['id'])
+                # for d in self.ret['total']:
+                #     result = d['results'][0]
+                #     print(result['formatted_address'])
+                #     print(result['geometry']['location']['lat'], result['geometry']['location']['lng'])
+                #     print(result['place_id'])
+                #     print(str(result['types']).replace('[', '').replace(']','')) 
     
     def save_geocoding(self, stat_list, id_list):
         for i, ids in enumerate(id_list):

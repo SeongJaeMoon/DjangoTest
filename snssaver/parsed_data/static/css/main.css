@@ -1,35 +1,13 @@
+@charset "utf-8";
+
 * {font-family: 'Nanum Gothic', sans-serif;}
 
-.navbar-brand > img{
-    width: 50px;
-    height: 50px;
-}
-html,
-body {
-  height: 100%;
-}
-html {
-  overflow-x: hidden!important;
-}
-body {
-  font-family: 'Open Sans', Arial, sans-serif;
-  font-size: 13px;
-  color: #666666;
-  line-height: 1.5;
-  background-color: #ffffff;
-}
-.wrapper {
-  overflow: hidden;
-  background-color: #fcfcfc;
-}
-.wrapper.container {
-  background-color: #ffffff;
-  padding-right: 0px;
-  padding-left: 0px;
-  margin-right: 0;
-  margin-left: 0;
-  width: auto;
-}
+.navbar-brand > img{width: 50px; height: 50px;}
+html, body {height: 100%;}
+html {overflow-x: hidden!important;}
+body {font-family: 'Open Sans', Arial, sans-serif; font-size: 13px; color: #666666;line-height: 1.5;background-color: #ffffff;}
+.wrapper {overflow: hidden;background-color: #fcfcfc;}
+.wrapper.container {background-color: #ffffff;padding-right: 0px;padding-left: 0px;margin-right: 0;margin-left: 0;width: auto;}
 @media (min-width: 768px) {
   .wrapper.container {
     width: 750px;
@@ -49,113 +27,14 @@ body {
     width: 1170px;
   }
 }
-#layout_options {
-  width: 180px;
-  position: fixed;
-  top: 100px;
-  right: -180px;
-  background-color: #fcfcfc;
-  border: solid 1px #82b0d8;
-  border-right: 0;
-  z-index: 1500;
-  padding: 0px 10px 10px 10px;
-}
-#layout_options .options-handle {
-  position: absolute;
-  left: -29px;
-  width: 30px;
-  padding: 5px 0 0 0;
-  height: 30px;
-  top: -1px;
-  text-align: center;
-  background-color: #fcfcfc;
-  border: solid 1px #82b0d8;
-  border-right: 0;
-  border-bottom-left-radius: 2px;
-  border-top-left-radius: 2px;
-}
-
-h1 small,
-h2 small,
-h3 small,
-h4 small,
-h5 small,
-h6 small,
-.h1 small,
-.h2 small,
-.h3 small,
-.h4 small,
-.h5 small,
-.h6 small,
-h1 .small,
-h2 .small,
-h3 .small,
-h4 .small,
-h5 .small,
-h6 .small,
-.h1 .small,
-.h2 .small,
-.h3 .small,
-.h4 .small,
-.h5 .small,
-.h6 .small {
-  font-weight: 300;
-}
-a {
-  color: #428bca;
-}
-a:hover,
-a:focus {
-  color: #2a6496;
-}
-.table {
-  font-size: 12px;
-  border-top: solid 1px #EEE;
-}
-.table > thead > tr > th {
-  font-size: 12px;
-  font-weight: 600;
-  border-bottom: none;
-  text-transform: uppercase;
-}
-.table > thead > tr > th:last-child {
-  text-align: right;
-}
-.table > tbody > tr > td {
-  border-top: solid 1px #EEE;
-}
-.table > tbody > tr > td:last-child {
-  text-align: right;
-}
-.table > tbody > tr:first-child > td {
-  border-top: none;
-}
-.table-hover > tbody > tr:hover > td,
-.table-hover > tbody > tr:hover > th {
-  background-color: #eef8ff;
-}
-.label {
-  display: inline-block;
-  font-weight: normal;
-}
-.label-default {
-  background-color: #c4c4c4;
-}
-.label-info {
-  background-color: #5bc0de;
-}
-.label-primary {
-  background-color: #5b98cc;
-}
-.label-success {
-  background-color: #84ce84;
-}
-.label-warning {
-  background-color: #e8b976;
-}
-.label-danger {
-  background-color: #d97572;
-}
+a {color: #428bca;}
+a:hover, a:focus {color: #2a6496;}
+.table {font-size: 12px;border-top: solid 1px #EEE;}
+.table > thead > tr > th {font-size: 12px;font-weight: 600;border-bottom: none;text-transform: uppercase;}
+.table > thead > tr > th:last-child {text-align: right;}
+.table > tbody > tr > td {border-top: solid 1px #EEE;}
+.table > tbody > tr > td:last-child {text-align: right;}
+.table > tbody > tr:first-child > td {border-top: none;}
 .pagination {
   border-radius: 2px;
 }
@@ -260,59 +139,6 @@ a:focus {
   cursor: not-allowed;
 }
 /*
- * Colored styles
- */
-.text-muted {
-  color: #c4c4c4;
-}
-.text-muted:hover {
-  color: #b2b2b2;
-}
-.text-info {
-  color: #5bc0de;
-}
-.text-info:hover {
-  color: #3db5d8;
-}
-.text-primary {
-  color: #5b98cc;
-}
-.text-primary:hover {
-  color: #4087c4;
-}
-.text-success {
-  color: #71c671;
-}
-.text-success:hover {
-  color: #58bc58;
-}
-.text-warning {
-  color: #e8b976;
-}
-.text-warning:hover {
-  color: #e3a957;
-}
-.text-danger {
-  color: #d97572;
-}
-.text-danger:hover {
-  color: #d15956;
-}
-/*
- * Breadcrumb
- */
-.breadcrumb {
-  padding: 8px 15px;
-  margin-bottom: 0;
-  background-color: #fcfcfc;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  border-radius: 0;
-}
-.breadcrumb > .active {
-  color: #666666;
-}
-/*
  * Charts
  */
 .pie-chart {
@@ -338,7 +164,6 @@ a:focus {
   margin-top: 5px;
   text-transform: uppercase;
 }
-
 .graph {
   padding: 10px;
   position: relative;
@@ -350,18 +175,15 @@ a:focus {
   width: 100%;
   min-width: 100%
 }
-
 .chartWrapper {
   position: relative;
 }
-
 .chartWrapper > canvas {
   position: absolute;
   left: 0;
   top: 0;
   pointer-events:none;
 }
-
 .chartAreaWrapper {
   width: 600px;
   overflow-x: scroll;

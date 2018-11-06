@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from analysis import times_hours_key, times_hours_val, times_value, times_date, get_model, get_bayese
+from firebase import Firebase
 from chatbot import make_replies
 import json
 # Class View 변경 필요
@@ -69,8 +70,10 @@ def gallery(request, ids):
     uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
     result = [] # 결과
     for up in UploadData.objects.filter(user = uid).order_by('-time'): # 유저 정보에 해당하는 포스팅 목록
-        for i in ImgData.objects.filter(list_img = up).order_by('-created_at'): # 실제 이미지 연결 주소
-            result.append([i.imgs, up.time])
+        link = str(up.link).split('?')[0]
+        if not link in [str(r[2]) for r in result]:
+            for i in ImgData.objects.filter(list_img = up).order_by('-created_at'): # 실제 이미지 연결 주소
+                result.append([i.imgs, up.time, link])
 
     page = request.GET.get('page', 1)
     paginator = Paginator(result, 36)
