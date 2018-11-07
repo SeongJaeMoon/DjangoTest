@@ -359,5 +359,6 @@ if __name__ == "__main__":
         word_embedding(i)
 
     # stat_list = [stat.place for stat in BasicStatistic.objects.all()]
-    # fb.save_geocoding(stat_list, auto_id)
+    # stat_list = [stat.place for stat in BasicStatistic.objects.all() if stat.place and stat.place != "" and stat.place is not None]:
+    # fb.save_geocoding(stat_list, auto_id, is_update=True)
     print("--- %s seconds ---" % (time.time() - start_time))

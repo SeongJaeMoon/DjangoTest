@@ -164,7 +164,7 @@ a:hover, a:focus {color: #2a6496;}
   margin-top: 5px;
   text-transform: uppercase;
 }
-.graph {
+/* .graph {
   padding: 10px;
   position: relative;
   overflow-x: scroll;
@@ -187,7 +187,28 @@ a:hover, a:focus {color: #2a6496;}
 .chartAreaWrapper {
   width: 600px;
   overflow-x: scroll;
+} */
+
+chartWrapper {
+  position: relative;
+  
 }
+.chartWrapper > canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events:none;
+}
+.chartAreaWrapper {
+  overflow-x: scroll;
+  position: relative;
+  width: 100%;
+}
+.chartAreaWrapper2 {
+  position: relative;
+  height: 300px;
+}
+
 /*
  * Images
  */

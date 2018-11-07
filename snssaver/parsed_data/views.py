@@ -58,15 +58,12 @@ def change_line(request):
 
 # More Analysistic
 def analysis(request, ids):
-    auto_id = [u.ids for u in ParsingData.objects.all()] # 전체 유저 정보
     parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
     
-    return render(request, 'parsed_data/analysis.html', {'users':auto_id,
-                                                         'parsing':parsing})
+    return render(request, 'parsed_data/analysis.html', {'parsing':parsing})
 
 # Gallery
 def gallery(request, ids):
-    auto_id = [u.ids for u in ParsingData.objects.all()] # 전체 유저 정보
     uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
     result = [] # 결과
     for up in UploadData.objects.filter(user = uid).order_by('-time'): # 유저 정보에 해당하는 포스팅 목록
@@ -84,14 +81,12 @@ def gallery(request, ids):
     except EmptyPage:
         images = paginator.page(paginator.num_pages)
 
-    return render(request, 'parsed_data/gallery.html', {'users':auto_id, 
-                                                        'parsing':uid, 
+    return render(request, 'parsed_data/gallery.html', {'parsing':uid, 
                                                         'images':images, 
                                                         'length':len(result)})
 
 # Video
 def video(request, ids):
-    auto_id = [u.ids for u in ParsingData.objects.all()]
     uid = ParsingData.objects.get(ids = ids) # id에 해당하는 유저 정보
     result = [] # 결과
     for up in UploadData.objects.filter(user = uid).order_by('-time'): # 유저 정보에 해당하는 포스팅 목록
@@ -106,14 +101,12 @@ def video(request, ids):
     except EmptyPage:
         videos = paginator.page(paginator.num_pages)
 
-    return render(request, 'parsed_data/video.html', {'users':auto_id, 
-                                                      'parsing':uid, 
+    return render(request, 'parsed_data/video.html', {'parsing':uid, 
                                                       'videos':videos, 
                                                       'length':len(result)})
 
 # Comment
 def comment(request, ids):
-    auto_id = [u.ids for u in ParsingData.objects.all()]
     parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
     
     user_ret = []
@@ -150,8 +143,7 @@ def comment(request, ids):
                                                         're_data_val':re_data_val,
                                                         'pn_times':pn_times,
                                                         'positive':positive,
-                                                        'negative':negative,
-                                                        'users':auto_id})
+                                                        'negative':negative})
 
 
 def make_reply(request):

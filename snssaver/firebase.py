@@ -37,7 +37,7 @@ class Firebase():
                 #     print(result['place_id'])
                 #     print(str(result['types']).replace('[', '').replace(']','')) 
     
-    def save_geocoding(self, stat_list, id_list):
+    def save_geocoding(self, stat_list, id_list, is_update=False):
         for i, ids in enumerate(id_list):
             keys = self.get_places(stat_list[i])
             values = self.get_places_value(stat_list[i])
@@ -58,7 +58,10 @@ class Firebase():
                     except Exception as e:
                         pass
                 dic = json.loads(ret)
-                self.db.child(str(i)).push(dic)
+                if not is_update:
+                    self.db.child(str(i)).push(dic)
+                else:
+                    self.db.child(str(i)).update(dic)
             print(ids, ' done')
         print('firebase geocoding-all done')
     
