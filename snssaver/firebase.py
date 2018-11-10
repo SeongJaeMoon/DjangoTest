@@ -28,14 +28,6 @@ class Firebase():
                             self.ret = v
                             break
         return self.ret
-            # if self.ret:
-                # print(self.ret['id'])
-                # for d in self.ret['total']:
-                #     result = d['results'][0]
-                #     print(result['formatted_address'])
-                #     print(result['geometry']['location']['lat'], result['geometry']['location']['lng'])
-                #     print(result['place_id'])
-                #     print(str(result['types']).replace('[', '').replace(']','')) 
     
     def save_geocoding(self, stat_list, id_list, is_update=False):
         for i, ids in enumerate(id_list):
@@ -64,7 +56,7 @@ class Firebase():
                     self.db.child(str(i)).update(dic)
             print(ids, ' done')
         print('firebase geocoding-all done')
-    
+            
     # 사용자가 자주 태그한 장소 Top10 장소 반환
     def get_places(self, data):
         keys = [str(d).replace("('", '').replace("',", '').strip() for d in re.findall("\('[\w+\!,\.・`\-_=\/?<>~@#$%^&;:\[\]\+\*\(\)\" ]+',", data, re.UNICODE)]    

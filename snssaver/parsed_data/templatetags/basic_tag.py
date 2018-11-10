@@ -4,6 +4,7 @@ import re
 from django.utils.safestring import mark_safe
 from datetime import datetime
 import dateutil.parser
+import json
 
 register = template.Library()
 
@@ -74,3 +75,42 @@ def get_images(data): # 이미지 정보
         result += '<div style="margin-right:0px; float:left; border: 1px solid red;"><a href="'+ d[2]+ '" target="_blank"><img alt='+ time +' src='+ d[0] +' style="width: 600px; height:700px;"></a></div>'
     return mark_safe(result)
 
+@register.filter
+def map_place_id(ret):
+    result = []
+    if ret:
+        for d in ret['total']:
+            if d.get('results') is not None:  
+                results = d.get('results')[0]
+                result.append(results['place_id'])
+    return mark_safe(result)
+
+@register.filter
+def map_address(ret):
+    result = []
+    if ret:
+        for d in ret['total']:
+            if d.get('results') is not None:  
+                results = d.get('results')[0]
+                result.append('<strong>' + str(results['formatted_address']).replace("\'", '') + '</strong>>,')
+    return mark_safe(result)
+
+@register.filter
+def map_lat(ret):
+    result = []
+    if ret:
+        for d in ret['total']:
+            if d.get('results') is not None:  
+                results = d.get('results')[0]
+                result.append(results['geometry']['location']['lat'])
+    return mark_safe(result)
+
+@register.filter
+def map_lng(ret):
+    result = []
+    if ret:
+        for d in ret['total']:
+            if d.get('results') is not None:  
+                results = d.get('results')[0]
+                result.append(results['geometry']['location']['lng'])
+    return mark_safe(result)

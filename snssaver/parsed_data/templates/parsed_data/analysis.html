@@ -14,6 +14,7 @@
     <!-- style -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/dropdown.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
@@ -132,29 +133,65 @@
         </div>
         <!-- END: BODY -->
     </div>
-    <!-- <script type="text/javascript">
-        places = places.replace('[','').replace(']','').replace("'",'').split(',');
-        pvalues = pvalues.replace('[','').replace(']','').replace("'",'').split(',');
-        var len = places.length;
-        var newPlaces = [];
-        var newPValues = [];
-        for(var i = 0; i < len; ++i){
-            newPlaces.push(places[i].replace("'",'').trim());
-            newPValues.push(parseInt(pvalues[i].replace("'",'').trim()));
-        }
-        console.log(newPlaces, newPValues);
-    </script> -->
+    <script type="text/javascript">
+        function initMap(){
+            var place_id = "{{ map_ret|map_place_id }}";
+            var map_lat = "{{ map_ret|map_lat }}";
+            var map_lng = "{{ map_ret|map_lng }}";
+            var map_add = "{{ map_ret|map_address }}";
+            place_id = place_id.replace("'",'').replace('[', '').replace(']', '').split(',');
+            map_lat = map_lat.replace('[', '').replace(']', '').split(',');
+            map_lng = map_lng.replace('[', '').replace(']', '').split(',');
+            map_add = map_add.replace('[', '').replace(']', '').split('>,');
+            var newPlaces = [];
+            var newValues = [];
+            var newAddress = [];
+            var len = place_id.length;
+    
+            for(var i = 0; i < len; ++i){
+                    if (place_id[i] != "undefiend" && place_id[i] != null){
+                        newPlaces.push(new String(place_id[i]).replace(/'/g, "").trim());
+                        newAddress.push(new String(map_add[i]).replace(/'/g, "").replace(', ', '').trim());
+                        var temp = {lat: 0, lng: 0};
+                        temp.lat = parseFloat(map_lat[i].replace("'",'').trim());
+                        temp.lng = parseFloat(map_lng[i].replace("'",'').trim()); 
+                        newValues.push(temp);
+                    }
+            }
+            console.log(newValues);
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 37.541, lng: 126.986},
+                zoom: 8,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            var infowindow = new google.maps.InfoWindow({});
 
-    <!-- <script type="text/javascript">
-        var map;
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: -34.397, lng: 150.644},
-            zoom: 8
-        });
-      }
-    </script> -->
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa1-OAbKJx0mf-kq2DN3tQArOfj2o36GE&callback=initMap"
-    async defer></script> -->
+            var marker, i;
+            for (i = 0; i < len; i++) {
+                marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(newValues[i]['lat'], newValues[i]['lng']),
+                    map: map
+                });
+
+                google.maps.event.addListener(marker, 'click', (function (marker, i) {
+                    return function () {
+                        infowindow.setContent(newAddress[i]);
+                        infowindow.open(map, marker);
+                    }
+                })(marker, i));
+            }
+            var getPath = new google.maps.Polyline({
+            path: newValues,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+            });
+            getPath.setMap(map);
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDa1-OAbKJx0mf-kq2DN3tQArOfj2o36GE&callback=initMap"
+    async defer>
+    </script>
 </body>
 </html>

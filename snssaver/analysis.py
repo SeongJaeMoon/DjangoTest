@@ -353,10 +353,10 @@ def get_bayese(ids):
 if __name__ == "__main__":
     start_time = time.time()
     # 주기적으로 재분석 필요(DB 업데이트) -> DB 업데이트 파악
-    auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
-    for i in auto_id:
-        print(i)
-        word_embedding(i)
+    # auto_id = [str(user.ids).strip() for user in ParsingData.objects.all()]
+    # for i in auto_id:
+        # print(i)
+        # word_embedding(i)
 
     # stat_list = [stat.place for stat in BasicStatistic.objects.all()]
     # stat_list = [stat.place for stat in BasicStatistic.objects.all() if stat.place and stat.place != "" and stat.place is not None]:

@@ -59,8 +59,9 @@ def change_line(request):
 # More Analysistic
 def analysis(request, ids):
     parsing = ParsingData.objects.get(ids = ids.strip()) # 사용자 정보
-    
-    return render(request, 'parsed_data/analysis.html', {'parsing':parsing})
+    firebase = Firebase()
+    map_ret = firebase.get_geocoding(ids)
+    return render(request, 'parsed_data/analysis.html', {'parsing':parsing, "map_ret":map_ret})
 
 # Gallery
 def gallery(request, ids):
